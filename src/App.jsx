@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import ViewNav from "./pages/ViewNav.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
 import { ALL_CATALOG_ITEMS } from "./lib/catalog";
+import { LOCODES } from "./lib/cores/locations";
 
 const ticketQrValue=(t)=>t?.qrPayload||`pickit://ticket/${t?.id||""}`;
 
@@ -21,8 +22,6 @@ const CATS=["Optics","Cables","Consumables","Hardware","Other"];
 const CC={Optics:D.blue,Cables:D.teal,Consumables:D.amber,Hardware:D.purple,Other:D.t3};
 const ROLE_COLOR={"DCT":D.blueT,"DCM / Tiger Team":D.greenT,"ICS":D.tealT};
 const ROLE_DOT={"DCT":D.blue,"DCM / Tiger Team":D.green,"ICS":D.teal};
-
-const LOCODES=["US-BVI01 – Breinigsville, PA","US-CMH01 – Columbus, OH","US-CSZ01 – Richmond / Chester, VA","US-CSZ02 – Richmond / Chester, VA","US-CVG01 – Cincinnati, OH","US-CVY01 – Clarksville, VA","US-DGV01 – Douglasville, GA","US-DNN01 – Dalton, GA","US-EWS01 – East Windsor, NJ","US-LNB01 – Lebanon, OH","US-LOE01 – Lowell, MA","US-OBG01 – Orangeburg, NY","US-PPY01 – Parsippany, NJ","US-SVG01 – Suwanee, GA","US-WJQ01 – Weehawken, NJ","US-LNS01 – Lancaster, PA","US-AAI01 – Alpharetta, GA","US-DTN01 – Denton, TX","US-HMN01 – Hammond, IN","US-PLZ01 – Plano, TX","US-PLZ02 – Plano 2, TX","US-RIN01 – Richardson, TX","US-VO201 – Volo, IL","US-WCI01 – West Chicago (ORD1), IL","US-CDZ01 – Caledonia / Grand Rapids, MI","US-EVI01 – Elk Grove Village, IL","US-LZL01 – Ellendale, ND","US-KWO01 – Kenilworth, NJ","US-MKO01 – Muskogee, OK","US-SKY01 – Sandusky, OH","US-RRX01 – Round Rock, TX","US-LBB01 – Lubbock / West Texas","US-NNN01 – Centennial (Denver metro), CO","US-HIO01 – Hillsboro 1, OR","US-HIO02 – Hillsboro 2, OR","US-HIO03 – Hillsboro 3, OR","US-LAS01 – Las Vegas NAP7, NV","US-LAS02 – Las Vegas NAP12, NV","US-LAS03 – Las Vegas NAP15, NV","US-LYF01 – Lynnwood, WA","US-MSC01 – Mesa, AZ","US-NKQ01 – Newark (Bay Area), CA","US-PHX01 – Phoenix (Aligned), AZ","US-QNC01 – Quincy (WA), WA","US-SPK02 – Reno / Sparks 2 Superloop, NV","CA-GAL01 – Cambridge (Ontario), ON","GB-CWY01 – Crawley (LGW16), UK","GB-PPL01 – Docklands (London), UK","ES-BCN01 – Barcelona 1, Spain","ES-BCN03 – Barcelona 3, Spain","ES-AVQ01 – Alava / Rivabellosa, Spain","NO-OVO01 – Øvrebø, Norway","SE-FAN01 – Falun, Sweden","DK-SVL01 – Skovlunde DC, Denmark"];
 
 const VENDOR_MAP={
   "EX-SFP-10GE-LR-LU":"Luma","EX-SFP-1GE-LX-LU":"Luma","JNP-QSFP-100G-CWDM4-LU":"Luma",
