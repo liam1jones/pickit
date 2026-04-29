@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import coreweaveLogo from "./assets/coreweave-logo.png";
 import { QRCodeSVG } from "qrcode.react";
 import ViewNav from "./pages/ViewNav.jsx";
+import LoginScreen from "./pages/LoginScreen.jsx";
 import { ALL_CATALOG_ITEMS } from "./lib/catalog";
 
 const ticketQrValue=(t)=>t?.qrPayload||`pickit://ticket/${t?.id||""}`;
@@ -307,13 +308,13 @@ function ProjectSelector({ticketId, currentProjectId, onLink, projects, allSites
 }
 
 // ── Main App ──────────────────────────────────────────────────────────────────
-export default function App(){
+function PickItApp({initialUser,onLogout}){
   const [tickets,setTickets]=useState(INIT_TICKETS);
   const [projects,setProjects]=useState(INIT_PROJECTS);
   const [view,setView]=useState("board");
   const [aTab,setATab]=useState("overview");
   const [selId,setSelId]=useState(null);
-  const [user,setUser]=useState({name:"Liam Jones (Admin)",role:"DCM / Tiger Team",email:"ljones@coreweave.com"});
+  const [user,setUser]=useState(initialUser);
   const [showForm,setShowForm]=useState(false);
   const [showUserMenu,setShowUserMenu]=useState(false);
   const [fSite,setFSite]=useState("");
@@ -507,6 +508,11 @@ export default function App(){
             {showUserMenu&&<div style={{position:"absolute",right:0,top:"calc(100% + 4px)",background:D.bg1,border:`0.5px solid ${D.border}`,borderRadius:10,zIndex:99,minWidth:230,padding:8}}>
               <div style={{fontSize:10,color:D.t3,padding:"4px 8px 6px"}}>Switch role / user</div>
               {Object.entries(USERS).map(([role,us])=>us.map(u=><div key={u.email} onClick={()=>{setUser({name:u.name,role,email:u.email});setShowUserMenu(false);}} style={{padding:"7px 8px",fontSize:12,cursor:"pointer",borderRadius:6,background:user.email===u.email?D.bg3:"transparent",color:D.t1,display:"flex",alignItems:"center",gap:8}}><Av name={u.name} bg={D.purpleB} fg={D.purpleT}/><div><div style={{fontWeight:500}}>{u.name}</div><div style={{fontSize:10,color:D.t3}}>{role}</div></div></div>))}
+              <div style={{height:"0.5px",background:D.border,margin:"6px 0"}}/>
+              <div onClick={()=>{setShowUserMenu(false);onLogout&&onLogout();}} style={{padding:"7px 8px",fontSize:12,cursor:"pointer",borderRadius:6,color:D.redT,display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>e.currentTarget.style.background=D.bg3} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:"50%",background:D.redB,color:D.redT,fontSize:12,fontWeight:600}}>↩</span>
+                <div><div style={{fontWeight:500}}>Sign out</div><div style={{fontSize:10,color:D.t3}}>{user.email}</div></div>
+              </div>
             </div>}
           </div>
           <button onClick={()=>setShowForm(true)} style={{fontSize:13,padding:"8px 20px",borderRadius:8,border:"none",background:D.blue,color:"#fff",cursor:"pointer",fontWeight:500,letterSpacing:".01em"}}>+ New ticket</button>
@@ -1618,4 +1624,10 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
       </div>
     </div>
   );
+}
+
+export default function App(){
+  const [authedUser,setAuthedUser]=useState(null);
+  if(!authedUser)return <LoginScreen users={USERS} theme={D} onLogin={setAuthedUser}/>;
+  return <PickItApp key={authedUser.email} initialUser={authedUser} onLogout={()=>setAuthedUser(null)}/>;
 }
