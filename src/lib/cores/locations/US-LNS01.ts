@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-LNS01 – Lancaster, PA`,
   timezone: "America/New_York",
   zipCode: "17602",
+  regionalIcm: "",
+  ics: "",
+  address: "",
 };

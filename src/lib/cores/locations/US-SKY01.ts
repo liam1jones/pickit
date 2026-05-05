@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-SKY01 – Sandusky, OH`,
   timezone: "America/New_York",
   zipCode: "44870",
+  regionalIcm: "Liam Jones",
+  ics: "",
+  address: "2509 Hayes Ave, Bldg No. 1, Sandusky, OH 44870",
 };

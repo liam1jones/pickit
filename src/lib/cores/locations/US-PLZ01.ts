@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-PLZ01 – Plano, TX`,
   timezone: "America/Chicago",
   zipCode: "75074",
+  regionalIcm: "Jesus Robles",
+  ics: "Esteban Sotelo, Anthony Navarrete",
+  address: "1000 Coit Rd Plano TX 75075",
 };

@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `GB-PPL01 – Docklands (London), UK`,
   timezone: "Europe/London",
   zipCode: "E14 5HP",
+  regionalIcm: "Rhys Lopez-Lloyd",
+  ics: "Scott Hall",
+  address: "3 Nutmeg Lane, London, E14 2AX",
 };

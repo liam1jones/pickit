@@ -52,67 +52,84 @@ import { location as ES_AVQ01 } from "./ES-AVQ01";
 import { location as NO_OVO01 } from "./NO-OVO01";
 import { location as SE_FAN01 } from "./SE-FAN01";
 import { location as DK_SVL01 } from "./DK-SVL01";
+import { LOGISTICS_BY_LOCODE } from "./logisticsDatabase";
 import type { CoreWeaveLocation } from "./types";
+
+/**
+ * App LOCODE → Logistics Database row key when the spreadsheet uses a different code
+ * for the same or paired site (e.g. US-DNN02 row covers Dalton DC).
+ */
+const LOGISTICS_LOCODE_ALIASES: Partial<Record<string, string>> = {
+  "US-DNN01": "US-DNN02",
+  "US-CSZ02": "US-CSZ01",
+};
+
+function withLogistics(loc: Omit<CoreWeaveLocation, "logistics">): CoreWeaveLocation {
+  const key = LOGISTICS_LOCODE_ALIASES[loc.code] ?? loc.code;
+  const logistics = LOGISTICS_BY_LOCODE[key];
+  return logistics ? { ...loc, logistics } : { ...loc };
+}
 
 /** Ordered list of all site locations (same order as legacy LOCODES). */
 export const ALL_LOCATIONS: CoreWeaveLocation[] = [
-  US_BVI01,
-  US_CMH01,
-  US_CSZ01,
-  US_CSZ02,
-  US_CVG01,
-  US_CVY01,
-  US_DGV01,
-  US_DNN01,
-  US_EWS01,
-  US_LNB01,
-  US_LOE01,
-  US_OBG01,
-  US_PPY01,
-  US_SVG01,
-  US_WJQ01,
-  US_LNS01,
-  US_AAI01,
-  US_DTN01,
-  US_HMN01,
-  US_PLZ01,
-  US_PLZ02,
-  US_RIN01,
-  US_VO201,
-  US_WCI01,
-  US_CDZ01,
-  US_EVI01,
-  US_LZL01,
-  US_KWO01,
-  US_MKO01,
-  US_SKY01,
-  US_RRX01,
-  US_LBB01,
-  US_NNN01,
-  US_HIO01,
-  US_HIO02,
-  US_HIO03,
-  US_LAS01,
-  US_LAS02,
-  US_LAS03,
-  US_LYF01,
-  US_MSC01,
-  US_NKQ01,
-  US_PHX01,
-  US_QNC01,
-  US_SPK02,
-  CA_GAL01,
-  GB_CWY01,
-  GB_PPL01,
-  ES_BCN01,
-  ES_BCN03,
-  ES_AVQ01,
-  NO_OVO01,
-  SE_FAN01,
-  DK_SVL01,
+  withLogistics(US_BVI01),
+  withLogistics(US_CMH01),
+  withLogistics(US_CSZ01),
+  withLogistics(US_CSZ02),
+  withLogistics(US_CVG01),
+  withLogistics(US_CVY01),
+  withLogistics(US_DGV01),
+  withLogistics(US_DNN01),
+  withLogistics(US_EWS01),
+  withLogistics(US_LNB01),
+  withLogistics(US_LOE01),
+  withLogistics(US_OBG01),
+  withLogistics(US_PPY01),
+  withLogistics(US_SVG01),
+  withLogistics(US_WJQ01),
+  withLogistics(US_LNS01),
+  withLogistics(US_AAI01),
+  withLogistics(US_DTN01),
+  withLogistics(US_HMN01),
+  withLogistics(US_PLZ01),
+  withLogistics(US_PLZ02),
+  withLogistics(US_RIN01),
+  withLogistics(US_VO201),
+  withLogistics(US_WCI01),
+  withLogistics(US_CDZ01),
+  withLogistics(US_EVI01),
+  withLogistics(US_LZL01),
+  withLogistics(US_KWO01),
+  withLogistics(US_MKO01),
+  withLogistics(US_SKY01),
+  withLogistics(US_RRX01),
+  withLogistics(US_LBB01),
+  withLogistics(US_NNN01),
+  withLogistics(US_HIO01),
+  withLogistics(US_HIO02),
+  withLogistics(US_HIO03),
+  withLogistics(US_LAS01),
+  withLogistics(US_LAS02),
+  withLogistics(US_LAS03),
+  withLogistics(US_LYF01),
+  withLogistics(US_MSC01),
+  withLogistics(US_NKQ01),
+  withLogistics(US_PHX01),
+  withLogistics(US_QNC01),
+  withLogistics(US_SPK02),
+  withLogistics(CA_GAL01),
+  withLogistics(GB_CWY01),
+  withLogistics(GB_PPL01),
+  withLogistics(ES_BCN01),
+  withLogistics(ES_BCN03),
+  withLogistics(ES_AVQ01),
+  withLogistics(NO_OVO01),
+  withLogistics(SE_FAN01),
+  withLogistics(DK_SVL01),
 ];
 
 /** Legacy string labels for selects (full display text). */
 export const LOCODES: string[] = ALL_LOCATIONS.map((l) => l.label);
 
-export type { CoreWeaveLocation } from "./types";
+export { LOGISTICS_BY_LOCODE } from "./logisticsDatabase";
+export type { CoreWeaveLocation, SiteLogistics } from "./types";

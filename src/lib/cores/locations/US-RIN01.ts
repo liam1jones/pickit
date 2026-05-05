@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-RIN01 – Richardson, TX`,
   timezone: "America/Chicago",
   zipCode: "75080",
+  regionalIcm: "Jesus Robles",
+  ics: "Anthony Neis",
+  address: "1510 E Lookout Dr, Richardson, TX 75082",
 };

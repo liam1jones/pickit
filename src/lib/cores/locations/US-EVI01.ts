@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-EVI01 – Elk Grove Village, IL`,
   timezone: "America/Chicago",
   zipCode: "60007",
+  regionalIcm: "",
+  ics: "Brian McClure",
+  address: "Elk Grove Village",
 };

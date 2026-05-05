@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `NO-OVO01 – Øvrebø, Norway`,
   timezone: "Europe/Oslo",
   zipCode: "4640",
+  regionalIcm: "Rhys Lopez-Lloyd",
+  ics: "George Agbo",
+  address: "",
 };
