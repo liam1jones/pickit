@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-AAI01 – Alpharetta, GA`,
   timezone: "America/New_York",
   zipCode: "30009",
+  regionalIcm: "Matt Whittle",
+  ics: "Amanda Desir",
+  address: "4905 N Point Pkwy, Alpharetta, GA 30022",
 };

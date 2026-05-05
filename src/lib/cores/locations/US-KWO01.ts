@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-KWO01 – Kenilworth, NJ`,
   timezone: "America/New_York",
   zipCode: "07033",
+  regionalIcm: "Liam Jones",
+  ics: "",
+  address: "2000 Galloping Hill Rd, Kenilworth, NJ 07033",
 };

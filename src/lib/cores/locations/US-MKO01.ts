@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-MKO01 – Muskogee, OK`,
   timezone: "America/Chicago",
   zipCode: "74401",
+  regionalIcm: "",
+  ics: "",
+  address: "4901 HaroldScoggins Dr, Muskogee, OK 74403",
 };

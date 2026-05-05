@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `SE-FAN01 – Falun, Sweden`,
   timezone: "Europe/Stockholm",
   zipCode: "791 31",
+  regionalIcm: "Rhys Lopez-Lloyd",
+  ics: "Zain Nasir",
+  address: "",
 };

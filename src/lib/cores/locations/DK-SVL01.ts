@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `DK-SVL01 – Skovlunde DC, Denmark`,
   timezone: "Europe/Copenhagen",
   zipCode: "2740",
+  regionalIcm: "Rhys Lopez-Lloyd",
+  ics: "",
+  address: "Tonsbakken 12, 2740 Skovlunde, Denmark",
 };

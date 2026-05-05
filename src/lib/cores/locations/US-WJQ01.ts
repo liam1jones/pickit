@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-WJQ01 – Weehawken, NJ`,
   timezone: "America/New_York",
   zipCode: "07086",
+  regionalIcm: "Liam Jones",
+  ics: "Xavier Adams",
+  address: "1919 Park Ave, Weehawken, NJ 07086",
 };

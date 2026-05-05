@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `ES-AVQ01 – Alava / Rivabellosa, Spain`,
   timezone: "Europe/Madrid",
   zipCode: "01420",
+  regionalIcm: "Rhys Lopez-Lloyd",
+  ics: "Tamara Beisti",
+  address: "",
 };

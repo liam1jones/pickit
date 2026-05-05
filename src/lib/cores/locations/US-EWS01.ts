@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-EWS01 – East Windsor, NJ`,
   timezone: "America/New_York",
   zipCode: "08520",
+  regionalIcm: "Liam Jones",
+  ics: "Pat McDermott",
+  address: "159 Princeton Hightstown Road, East Windsor, NJ 08520",
 };

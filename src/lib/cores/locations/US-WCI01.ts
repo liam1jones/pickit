@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `US-WCI01 – West Chicago (ORD1), IL`,
   timezone: "America/Chicago",
   zipCode: "60185",
+  regionalIcm: "Liam Jones",
+  ics: "Scott Middleton",
+  address: "603 Discovery Dr. West Chicago, IL 60185",
 };

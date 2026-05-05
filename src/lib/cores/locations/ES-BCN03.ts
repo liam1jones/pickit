@@ -5,4 +5,7 @@ export const location: CoreWeaveLocation = {
   label: `ES-BCN03 – Barcelona 3, Spain`,
   timezone: "Europe/Madrid",
   zipCode: "08040",
+  regionalIcm: "Rhys Lopez-Lloyd",
+  ics: "Ezequiel Ramos Vertiz",
+  address: "",
 };
