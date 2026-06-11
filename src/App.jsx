@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import coreweaveLogo from "./assets/coreweave-logo.png";
 import { QRCodeSVG } from "qrcode.react";
 import ViewNav from "./pages/ViewNav.jsx";
+import FlowchartView from "./pages/FlowchartView.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
 import { ALL_CATALOG_ITEMS } from "./lib/catalog";
 import { LOCODES } from "./lib/cores/locations";
@@ -1606,10 +1607,11 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
       {NsToast}{IcsToast}{ExcessModal}{FormModal}{WoModal}
       {Topbar}
       <div style={{flex:1,padding:16,overflowY:"auto",display:"flex",flexDirection:"column"}}>
-        {view!=="detail"&&view!=="analytics"&&MRow}
+        {view!=="detail"&&view!=="analytics"&&view!=="flowchart"&&MRow}
         {view==="board"&&BoardView}
         {view==="list"&&ListView}
         {view==="detail"&&DetailView}
+        {view==="flowchart"&&<FlowchartView theme={D}/>}
         {view==="analytics"&&(
           <div>
             <div style={{display:"flex",gap:8,marginBottom:14,borderBottom:`0.5px solid ${D.border}`,paddingBottom:10}}>

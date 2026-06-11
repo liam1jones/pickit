@@ -1,8 +1,8 @@
-/** Top-bar view switcher (Board / List / Analytics).
+/** Top-bar view switcher (Board / List / Analytics / Flowchart).
  *  Extracted from App.jsx so the nav is reusable and easy to extend.
  *  Expects the theme object (D) so it stays visually consistent with the app
  *  without duplicating color tokens. */
-export const VIEWS = ["board", "list", "analytics"];
+export const VIEWS = ["board", "list", "analytics", "flowchart"];
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
