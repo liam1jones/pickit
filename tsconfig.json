@@ -13,6 +13,8 @@
     "src/main.tsx",
     "src/vite-env.d.ts",
     "src/lib/roles/**/*.ts",
-    "src/lib/cores/vendors/**/*.ts"
+    "src/lib/cores/vendors/**/*.ts",
+    "src/lib/dummyData/**/*.ts",
+    "src/lib/cores/inventory/**/*.ts"
   ]
 }

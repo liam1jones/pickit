@@ -8,21 +8,19 @@ import { ALL_CATALOG_ITEMS } from "./lib/catalog";
 import { LOCODES } from "./lib/cores/locations";
 import { VENDOR_MAP } from "./lib/cores/vendors";
 import { getRoleColorMap, getRoleDotMap } from "./lib/roles";
+import { INIT_PROJECTS, INIT_TICKETS, mkD } from "./lib/dummyData/mockDataCenter";
+import { CATALOG_GROUP_LABEL, D, getCatalogGroupColorMap } from "./lib/cores/inventory";
+import { CATS, getCategoryColorMap } from "./lib/cores/inventory/consumables";
 
 const ticketQrValue=(t)=>t?.qrPayload||`pickit://ticket/${t?.id||""}`;
 
 const parseCatalogUsd=(s)=>{if(!s||typeof s!=="string")return null;const n=Number.parseFloat(s.replace(/[$,\s]/g,""));return Number.isFinite(n)?n:null;};
 
-const CAT_GROUP_LABEL={cable:"Cabling",transceiver:"Optics / Transceivers",consumable:"Consumables",hardware:"Hardware",service:"Services",other:"Other"};
-
-const D={bg0:"#0f1117",bg1:"#16191f",bg2:"#1e2128",bg3:"#252830",border:"rgba(255,255,255,0.08)",borderH:"rgba(255,255,255,0.14)",t1:"#e8eaf0",t2:"#9ca3af",t3:"#5a6070",blue:"#3b82f6",blueB:"#1e3a5f",blueT:"#93c5fd",green:"#22c55e",greenB:"#14532d",greenT:"#86efac",amber:"#f59e0b",amberB:"#451a03",amberT:"#fcd34d",purple:"#a78bfa",purpleB:"#2e1065",purpleT:"#c4b5fd",teal:"#2dd4bf",tealB:"#134e4a",tealT:"#99f6e4",red:"#f87171",redB:"#450a0a",redT:"#fca5a5"};
-
 const SC={"Open / Submitted":{bg:D.bg3,tx:D.t2,bd:D.border},"Pending Approval":{bg:D.bg3,tx:D.t2,bd:D.border},"Approved – Pending Transfer":{bg:D.amberB,tx:D.amberT,bd:D.amber},"Picked / Staged":{bg:"#1a2e1a",tx:"#6ee7b7",bd:"#34d399"},"In Progress – Work Underway":{bg:D.tealB,tx:D.tealT,bd:D.teal},"Excess Return Pending":{bg:D.amberB,tx:D.amberT,bd:D.amber},"Resolved / Closed":{bg:D.greenB,tx:D.greenT,bd:D.green}};
 
 const STATS=["Open / Submitted","Pending Approval","Approved – Pending Transfer","Picked / Staged","In Progress – Work Underway","Excess Return Pending","Resolved / Closed"];
 const PC=["#3b82f6","#2dd4bf","#a78bfa","#f59e0b","#22c55e","#f87171","#e879f9","#fb923c"];
-const CATS=["Optics","Cables","Consumables","Hardware","Other"];
-const CC={Optics:D.blue,Cables:D.teal,Consumables:D.amber,Hardware:D.purple,Other:D.t3};
+const CC=getCategoryColorMap(D);
 const ROLE_COLOR=getRoleColorMap(D);
 const ROLE_DOT=getRoleDotMap(D);
 
@@ -35,7 +33,7 @@ const PARTS_CATALOG=(()=>{
     const key=pn.toUpperCase();
     if(seen.has(key))continue;
     seen.add(key);
-    const group=CAT_GROUP_LABEL[it.category]||"Other";
+    const group=CATALOG_GROUP_LABEL[it.category]||"Other";
     const desc=((it.description||it.model||"").trim())||pn;
     const price=parseCatalogUsd(it.estimatedCost)??0;
     (groups[group]||=[]).push({pn,desc,price,mfr:it.manufacturer||""});
@@ -52,23 +50,7 @@ const bomUnitPrice=(item)=>{const k=(item.partNumber||"").trim().toUpperCase();i
 
 const USERS={DCT:[{name:"J. Torres",email:"jtorres@coreweave.com"},{name:"D. Kim",email:"dkim@coreweave.com"},{name:"A. Reyes",email:"areyes@coreweave.com"}],"DCM / Tiger Team":[{name:"Graham Lawson",email:"glawson@coreweave.com"},{name:"Jesse Ball",email:"jball@coreweave.com"},{name:"Adam Razac",email:"arazac@coreweave.com"},{name:"Liam Jones (Admin)",email:"ljones@coreweave.com"}],ICS:[{name:"Cole Megna",email:"cmegna@coreweave.com"},{name:"Frank D'Arrigo",email:"fdarrigo@coreweave.com"},{name:"Jesus Robles (RICM)",email:"jrobles@coreweave.com"},{name:"Matt Whittle (RICM)",email:"mwhittle@coreweave.com"},{name:"Rhys Lopez-Lloyd (RICM)",email:"rlopezlloyd@coreweave.com"}]};
 
-const mkD=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split("T")[0];};
 const tod=()=>new Date().toISOString().split("T")[0];
-const mkL=(ts,who,role,action,detail="")=>({ts,who,role,action,detail});
-
-const T0={id:"PICK-0042",site:"US-OBG01 – Orangeburg, NY",part:"SFP-10G-SR",location:"DH2 – Rack C14",qtyReq:4,qtyIns:3,qtyRet:1,req:"J. Torres",ics:"Cole Megna",status:"In Progress – Work Underway",date:mkD(0),comments:[{who:"J. Torres (DCT)",text:"Materials received."}],asana:"task-8821",log:[mkL("09:01","J. Torres","DCT","Ticket submitted","SFP-10G-SR × 4 – DH2 Rack C14"),mkL("09:14","Graham Lawson","DCM / Tiger Team","Ticket approved","Status → Approved – Pending Transfer"),mkL("09:22","Cole Megna","ICS","Picked / Staged","Materials staged — DCT notified"),mkL("09:38","J. Torres","DCT","Materials received & work begun","NetSuite bin transfer fired — 4× SFP-10G-SR Stored → In Process"),mkL("10:05","J. Torres","DCT","Comment added","Materials received.")]};
-const T1={id:"PICK-0041",site:"US-WJQ01 – Weehawken, NJ",part:"PSU-1200W-AC",location:"DH3 – Rack F07",qtyReq:2,qtyIns:null,qtyRet:null,req:"D. Kim",ics:"Frank D'Arrigo",status:"Pending Approval",date:mkD(0),comments:[],asana:"",log:[mkL("08:45","D. Kim","DCT","Ticket submitted","PSU-1200W-AC × 2 – DH3 Rack F07")]};
-const T2={id:"PICK-0040",site:"US-PPY01 – Parsippany, NJ",part:"QSFP-40G-SR4",location:"DH4 – Rack D01",qtyReq:1,qtyIns:null,qtyRet:null,req:"A. Reyes",ics:"Matt Whittle (RICM)",status:"Approved – Pending Transfer",date:mkD(1),comments:[],asana:"",log:[mkL("07:30","A. Reyes","DCT","Ticket submitted","QSFP-40G-SR4 × 1 – DH4 Rack D01"),mkL("07:52","Jesse Ball","DCM / Tiger Team","Ticket approved","")]};
-const T3={id:"PICK-0039",site:"US-LNS01 – Lancaster, PA",part:"CAT6A-3FT-BL",location:"DH2 – Rack B11",qtyReq:12,qtyIns:12,qtyRet:0,req:"J. Torres",ics:"Jesus Robles (RICM)",status:"Resolved / Closed",date:mkD(1),comments:[],asana:"task-8819",log:[mkL("06:10","J. Torres","DCT","Ticket submitted","CAT6A-3FT-BL × 12"),mkL("06:22","Adam Razac","DCM / Tiger Team","Ticket approved",""),mkL("06:35","Jesus Robles (RICM)","ICS","Picked / Staged","Materials staged"),mkL("06:50","J. Torres","DCT","Materials received & work begun","NetSuite bin transfer fired — 12× CAT6A-3FT-BL Stored → In Process"),mkL("08:30","Jesus Robles (RICM)","ICS","Ticket closed","No excess — Resolved / Closed")]};
-const T4={id:"PICK-0038",site:"US-OBG01 – Orangeburg, NY",part:"SFP-10G-SR",location:"DH1 – Rack A03",qtyReq:8,qtyIns:8,qtyRet:0,req:"D. Kim",ics:"Cole Megna",status:"Resolved / Closed",date:mkD(2),comments:[],asana:"task-8810",log:[mkL("08:00","D. Kim","DCT","Ticket submitted","SFP-10G-SR × 8"),mkL("08:10","Graham Lawson","DCM / Tiger Team","Ticket approved",""),mkL("08:20","Cole Megna","ICS","Picked / Staged",""),mkL("08:35","D. Kim","DCT","Materials received & work begun","NetSuite bin transfer fired — 8× SFP-10G-SR Stored → In Process"),mkL("10:00","Cole Megna","ICS","Ticket closed","No excess")]};
-const T5={id:"PICK-0037",site:"US-OBG01 – Orangeburg, NY",part:"QSFP-40G-SR4",location:"DH2 – Rack C06",qtyReq:6,qtyIns:5,qtyRet:1,req:"J. Torres",ics:"Cole Megna",status:"Resolved / Closed",date:mkD(3),comments:[],asana:"task-8805",log:[mkL("07:00","J. Torres","DCT","Ticket submitted","QSFP-40G-SR4 × 6"),mkL("07:12","Graham Lawson","DCM / Tiger Team","Ticket approved",""),mkL("07:25","Cole Megna","ICS","Picked / Staged",""),mkL("07:40","J. Torres","DCT","Materials received & work begun","NetSuite bin transfer fired — 6× QSFP-40G-SR4 Stored → In Process"),mkL("09:00","Cole Megna","ICS","Excess return flagged","Used: 5 | Returned: 1 | NetSuite: 1 unit In Process → Stored"),mkL("09:15","Cole Megna","ICS","Ticket closed","Return confirmed")]};
-const T6={id:"PICK-0036",site:"US-PPY01 – Parsippany, NJ",part:"SFP-10G-SR",location:"DH1 – Rack A09",qtyReq:10,qtyIns:10,qtyRet:0,req:"A. Reyes",ics:"Matt Whittle (RICM)",status:"Resolved / Closed",date:mkD(3),comments:[],asana:"task-8803",log:[mkL("06:00","A. Reyes","DCT","Ticket submitted","SFP-10G-SR × 10"),mkL("06:15","Jesse Ball","DCM / Tiger Team","Ticket approved",""),mkL("06:30","Matt Whittle (RICM)","ICS","Picked / Staged",""),mkL("06:50","A. Reyes","DCT","Materials received & work begun","NetSuite bin transfer fired — 10× SFP-10G-SR Stored → In Process"),mkL("09:00","Matt Whittle (RICM)","ICS","Ticket closed","No excess")]};
-const T7={id:"PICK-0035",site:"US-HIO01 – Hillsboro 1, OR",part:"SFP-10G-SR",location:"DH5 – Rack E01",qtyReq:16,qtyIns:16,qtyRet:0,req:"J. Torres",ics:"Frank D'Arrigo",status:"Resolved / Closed",date:mkD(4),comments:[],asana:"task-8798",log:[mkL("07:00","J. Torres","DCT","Ticket submitted","SFP-10G-SR × 16"),mkL("07:20","Adam Razac","DCM / Tiger Team","Ticket approved",""),mkL("07:35","Frank D'Arrigo","ICS","Picked / Staged",""),mkL("07:55","J. Torres","DCT","Materials received & work begun","NetSuite bin transfer fired — 16× SFP-10G-SR Stored → In Process"),mkL("10:30","Frank D'Arrigo","ICS","Ticket closed","No excess")]};
-const T8={id:"PICK-0034",site:"US-LAS01 – Las Vegas NAP7, NV",part:"SFP-10G-SR",location:"DH3 – Rack G02",qtyReq:20,qtyIns:18,qtyRet:2,req:"A. Reyes",ics:"Rhys Lopez-Lloyd (RICM)",status:"Resolved / Closed",date:mkD(6),comments:[],asana:"task-8785",log:[mkL("06:00","A. Reyes","DCT","Ticket submitted","SFP-10G-SR × 20"),mkL("06:18","Jesse Ball","DCM / Tiger Team","Ticket approved",""),mkL("06:30","Rhys Lopez-Lloyd (RICM)","ICS","Picked / Staged",""),mkL("06:50","A. Reyes","DCT","Materials received & work begun","NetSuite bin transfer fired — 20× SFP-10G-SR Stored → In Process"),mkL("09:00","Rhys Lopez-Lloyd (RICM)","ICS","Excess return flagged","Used: 18 | Returned: 2"),mkL("09:20","Rhys Lopez-Lloyd (RICM)","ICS","Ticket closed","Return confirmed")]};
-const T9={id:"PICK-0033",site:"US-LAS01 – Las Vegas NAP7, NV",part:"DAC-10G-3M",location:"DH3 – Rack G05",qtyReq:30,qtyIns:30,qtyRet:0,req:"J. Torres",ics:"Rhys Lopez-Lloyd (RICM)",status:"Resolved / Closed",date:mkD(6),comments:[],asana:"task-8782",log:[mkL("07:00","J. Torres","DCT","Ticket submitted","DAC-10G-3M × 30"),mkL("07:15","Graham Lawson","DCM / Tiger Team","Ticket approved",""),mkL("07:30","Rhys Lopez-Lloyd (RICM)","ICS","Picked / Staged",""),mkL("07:50","J. Torres","DCT","Materials received & work begun","NetSuite bin transfer fired — 30× DAC-10G-3M Stored → In Process"),mkL("11:00","Rhys Lopez-Lloyd (RICM)","ICS","Ticket closed","No excess")]};
-
-const INIT_TICKETS=[T0,T1,T2,T3,T4,T5,T6,T7,T8,T9];
-const INIT_PROJECTS=[{id:"proj-1",name:"OBG01 DH2 Optics, Cables & Consumables",site:"US-OBG01",dataHall:"DH2",subsidiary:"CoreWeave, Inc",description:"NSIM intake – Orangeburg DH2 full rack deployment",createdAt:mkD(14),items:[{id:"i1",partNumber:"SFP-10G-SR",description:"10G SR Optic",category:"Optics",unit:"ea",qtyPlanned:48,qtyIns:40,qtyRet:2,notes:"Phase 1 complete"},{id:"i2",partNumber:"DAC-10G-3M",description:"10G DAC Cable 3m",category:"Cables",unit:"ea",qtyPlanned:96,qtyIns:38,qtyRet:2,notes:""},{id:"i3",partNumber:"QSFP-40G-SR4",description:"40G SR4 QSFP",category:"Optics",unit:"ea",qtyPlanned:24,qtyIns:5,qtyRet:1,notes:"Phase 2 pending"},{id:"i4",partNumber:"ISOPROPYL-1L",description:"Isopropyl Alcohol 1L",category:"Consumables",unit:"bottle",qtyPlanned:6,qtyIns:4,qtyRet:0,notes:""},{id:"i5",partNumber:"FIBER-WIPE-100",description:"Fiber optic cleaning wipes",category:"Consumables",unit:"pk",qtyPlanned:200,qtyIns:120,qtyRet:0,notes:""}]}];
 
 const inpS={fontSize:12,padding:"7px 10px",borderRadius:8,border:`0.5px solid ${D.border}`,background:D.bg2,color:D.t1,outline:"none",boxSizing:"border-box",width:"100%"};
 const selS={...inpS,cursor:"pointer"};
@@ -110,7 +92,7 @@ function PartSearch({value, onChange}){
     if(!containerRef.current?.contains(e.relatedTarget)){setOpen(false);setQuery("");}
   };
 
-  const catColor={"Cabling":D.teal,"Optics / Transceivers":D.blue,"Consumables":D.amber,"Hardware":D.purple,"Services":D.t2,"Other":D.t3};
+  const catColor=getCatalogGroupColorMap(D);
 
   return(
     <div ref={containerRef} style={{position:"relative"}} onBlur={handleBlur}>
@@ -186,7 +168,7 @@ function ProjectSelector({ticketId, currentProjectId, onLink, projects, allSites
         <button onClick={()=>setCreating(false)} style={{...btnS,background:"transparent",color:D.t2,border:`0.5px solid ${D.border}`,fontWeight:400,fontSize:11}}>Cancel</button>
         <button onClick={()=>{
           if(!cf.name||!cf.site)return;
-          const p={id:`proj-${Date.now()}`,name:cf.name,site:cf.site,dataHall:cf.dataHall,subsidiary:cf.subsidiary,description:cf.description,createdAt:tod(),items:[]};
+          const p={id:`proj-${Date.now()}`,name:cf.name,code:cf.site,dataHall:cf.dataHall,subsidiary:cf.subsidiary,description:cf.description,createdAt:tod(),items:[]};
           setProjects(prev=>[...prev,p]);
           setCreating(false);
           if(onLink)onLink(p.id,p.name);
@@ -252,13 +234,13 @@ function PickItApp({initialUser,onLogout}){
   const now=()=>new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});
   const entry=(action,detail="")=>({ts:now(),who:user.name,role:user.role,action,detail});
 
-  const filtered=tickets.filter(t=>(!fSite||t.site.startsWith(fSite))&&(!fStat||t.status===fStat));
+  const filtered=tickets.filter(t=>(!fSite||t.code.startsWith(fSite))&&(!fStat||t.status===fStat));
   const mx={open:tickets.filter(t=>t.status!=="Resolved / Closed").length,pend:tickets.filter(t=>t.status==="Pending Approval").length,inp:tickets.filter(t=>t.status==="In Progress – Work Underway").length,excess:tickets.filter(t=>t.status==="Excess Return Pending").length,res:tickets.filter(t=>t.status==="Resolved / Closed").length};
 
-  const released=useMemo(()=>tickets.filter(t=>{const ok=["In Progress – Work Underway","Excess Return Pending","Resolved / Closed"].includes(t.status);return ok&&(!aFrom||t.date>=aFrom)&&(!aTo||t.date<=aTo)&&(!aSite||t.site.startsWith(aSite))&&(!aPart||t.part===aPart);}),[tickets,aFrom,aTo,aSite,aPart]);
+  const released=useMemo(()=>tickets.filter(t=>{const ok=["In Progress – Work Underway","Excess Return Pending","Resolved / Closed"].includes(t.status);return ok&&(!aFrom||t.date>=aFrom)&&(!aTo||t.date<=aTo)&&(!aSite||t.code.startsWith(aSite))&&(!aPart||t.part===aPart);}),[tickets,aFrom,aTo,aSite,aPart]);
   const allParts=[...new Set(tickets.map(t=>t.part))].sort();
-  const allSites=[...new Set(tickets.map(t=>t.site.split(" ")[0]))].sort();
-  const bySite=useMemo(()=>{const m={};released.forEach(t=>{const s=t.site.split(" ")[0];if(!m[s])m[s]={label:t.site,parts:{},total:0};if(!m[s].parts[t.part])m[s].parts[t.part]=0;m[s].parts[t.part]+=(t.qtyIns??t.qtyReq);m[s].total+=(t.qtyIns??t.qtyReq);});return Object.entries(m).sort((a,b)=>b[1].total-a[1].total);},[released]);
+  const allSites=[...new Set(tickets.map(t=>t.code))].sort();
+  const bySite=useMemo(()=>{const m={};released.forEach(t=>{const s=t.code;if(!m[s])m[s]={label:s,parts:{},total:0};if(!m[s].parts[t.part])m[s].parts[t.part]=0;m[s].parts[t.part]+=(t.qtyIns??t.qtyReq);m[s].total+=(t.qtyIns??t.qtyReq);});return Object.entries(m).sort((a,b)=>b[1].total-a[1].total);},[released]);
   const byPart=useMemo(()=>{const m={};released.forEach(t=>{if(!m[t.part])m[t.part]=0;m[t.part]+=(t.qtyIns??t.qtyReq);});return Object.entries(m).sort((a,b)=>b[1]-a[1]);},[released]);
   const grand=useMemo(()=>released.reduce((s,t)=>s+(t.qtyIns??t.qtyReq),0),[released]);
   const maxS=bySite.length?bySite[0][1].total:1;
@@ -270,9 +252,9 @@ function PickItApp({initialUser,onLogout}){
     const btNum=gbt();
     const lines=t.lines&&t.lines.length>1?t.lines:null;
     const xferQty=qty??(lines?lines.reduce((s,l)=>s+l.qtyReq,0):t.qtyReq);
-    const siteCode=t.site.split(" ")[0];
+    const siteCode=t.code;
     console.log("[NetSuite] Bin transfer:",{ref:btNum,ticket:t.id,lines:lines||[{part:t.part,qty:xferQty}],from:dir.split(" → ")[0],to:dir.split(" → ")[1],site:siteCode});
-    setNsToast({btNum,id:t.id,lines:lines||[{part:t.lines?t.lines[0].part:t.part,qtyReq:xferQty}],site:siteCode,siteFull:t.site,dir});
+    setNsToast({btNum,id:t.id,lines:lines||[{part:t.lines?t.lines[0].part:t.part,qtyReq:xferQty}],site:siteCode,siteFull:t.code,dir});
     setTimeout(()=>setNsToast(null),8000);
     return btNum;
   }
@@ -287,13 +269,13 @@ function PickItApp({initialUser,onLogout}){
     const autoApprove=user.role==="DCM / Tiger Team";
     const baseLog=[{ts:now(),who:user.name,role:user.role,action:"Ticket submitted",detail},{ts:now(),who:user.name,role:user.role,action:"QR tag assigned",detail:qrPayload}];
     if(autoApprove)baseLog.push({ts:now(),who:user.name,role:user.role,action:"Ticket approved",detail:"Auto-approved — submitted by DCM / Tiger Team Lead"});
-    const t={id,site:form.site,lines,location:loc,qtyReq:lines.reduce((s,l)=>s+l.qtyReq,0),qtyIns:null,qtyRet:null,req:user.name,ics:form.ics,dcm:form.dcm||null,taskLink:form.taskLink||"",projectId:null,status:autoApprove?"Approved – Pending Transfer":"Pending Approval",date:tod(),comments:[],asana:"",qrPayload,log:baseLog};
+    const t={id,code:form.site,lines,location:loc,qtyReq:lines.reduce((s,l)=>s+l.qtyReq,0),qtyIns:null,qtyRet:null,req:user.name,ics:form.ics,dcm:form.dcm||null,taskLink:form.taskLink||"",projectId:null,status:autoApprove?"Approved – Pending Transfer":"Pending Approval",date:tod(),comments:[],asana:"",qrPayload,log:baseLog};
     setTickets(p=>[t,...p]);
     setForm({site:"",dataHall:"",rack:"",ru:"",ics:"",dcm:"",taskLink:"",lines:[{id:1,part:"",qty:""}]});
     setShowForm(false);
     setSelId(t.id);setView("detail");
     if(autoApprove){
-      setIcsToast({id:t.id,ics:t.ics,site:t.site.split(" ")[0],siteFull:t.site,location:loc,lines,by:user.name});
+      setIcsToast({id:t.id,ics:t.ics,site:t.code,siteFull:t.code,location:loc,lines,by:user.name});
       setTimeout(()=>setIcsToast(null),9000);
     }
   }
@@ -324,7 +306,7 @@ function PickItApp({initialUser,onLogout}){
           }));
         }
         const partsSummary=(t.lines&&t.lines.length>1?t.lines.map(l=>`${l.qtyReq}× ${l.part}`).join(", "):`${t.qtyReq}× ${t.lines?t.lines[0].part:t.part}`);
-        detail=`NetSuite ${bt} fired — ${t.site.split(" ")[0]} — ${partsSummary} Stored → In Process`;
+        detail=`NetSuite ${bt} fired — ${t.code} — ${partsSummary} Stored → In Process`;
       }
       return{...t,status:next,log:[...(t.log||[]),{ts:now(),who:user.name,role:user.role,action,detail}]};
     }));
@@ -370,7 +352,7 @@ function PickItApp({initialUser,onLogout}){
 
   function createPrj(){
     if(!pForm.name||!pForm.site)return;
-    const p={id:`proj-${Date.now()}`,name:pForm.name,site:pForm.site,dataHall:pForm.dataHall,subsidiary:pForm.subsidiary,description:pForm.description,createdAt:tod(),items:[]};
+    const p={id:`proj-${Date.now()}`,name:pForm.name,code:pForm.site,dataHall:pForm.dataHall,subsidiary:pForm.subsidiary,description:pForm.description,createdAt:tod(),items:[]};
     setProjects(prev=>[...prev,p]);setActivePrj(p.id);setPForm({name:"",site:"",dataHall:"",subsidiary:"",description:""});setShowNewPrj(false);
   }
 
@@ -382,7 +364,7 @@ function PickItApp({initialUser,onLogout}){
   }
   function startEdit(item){setIForm({partNumber:item.partNumber,description:item.description,category:item.category,unit:item.unit,qtyPlanned:item.qtyPlanned,qtyIns:item.qtyIns,qtyRet:item.qtyRet,unitPrice:item.unitPrice||""});setEditItem(item.id);setShowItemForm(true);}
   function delItem(id){setProjects(prev=>prev.map(p=>p.id!==activePrj?p:{...p,items:p.items.filter(i=>i.id!==id)}));}
-  function exportPrj(p){if(!p?.items.length)return;csvExport(p.items.map(i=>({"Project":p.name,"NSIM Ref":p.nsimRef||"","Site":p.site,"Data Hall":p.dataHall||"","Part Number":i.partNumber,"Description":i.description,"Category":i.category,"Unit":i.unit,"Qty Planned":i.qtyPlanned,"Qty Installed":i.qtyIns,"Qty Returned":i.qtyRet,"Outstanding":Math.max(0,i.qtyPlanned-i.qtyIns),"% Complete":i.qtyPlanned>0?Math.round((i.qtyIns/i.qtyPlanned)*100)+"%" :"0%","Notes":i.notes,"Export Date":tod()})),`${p.name.replace(/[^a-z0-9]/gi,"_")}_NSIM_${tod()}.csv`);}
+  function exportPrj(p){if(!p?.items.length)return;csvExport(p.items.map(i=>({"Project":p.name,"NSIM Ref":p.nsimRef||"","Site":p.code,"Data Hall":p.dataHall||"","Part Number":i.partNumber,"Description":i.description,"Category":i.category,"Unit":i.unit,"Qty Planned":i.qtyPlanned,"Qty Installed":i.qtyIns,"Qty Returned":i.qtyRet,"Outstanding":Math.max(0,i.qtyPlanned-i.qtyIns),"% Complete":i.qtyPlanned>0?Math.round((i.qtyIns/i.qtyPlanned)*100)+"%" :"0%","Notes":i.notes,"Export Date":tod()})),`${p.name.replace(/[^a-z0-9]/gi,"_")}_NSIM_${tod()}.csv`);}
   function exportOverview(){if(!bySite.length)return;const rows=[];bySite.forEach(([site,d])=>Object.entries(d.parts).forEach(([part,qty])=>rows.push({"Site":site,"Part Number":part,"Qty Released":qty,"From":aFrom,"To":aTo})));csvExport(rows,`optics_summary_${tod()}.csv`);}
 
   const Topbar=(
@@ -458,7 +440,7 @@ function PickItApp({initialUser,onLogout}){
             <div style={{fontSize:12,fontWeight:500,color:D.t1,marginBottom:6,lineHeight:1.4}}>
               {t.lines?t.lines.map(l=>l.part).join(", "):t.part} – {t.location.split("–")[0].trim()}
             </div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:10,padding:"2px 7px",borderRadius:20,background:D.blueB,color:D.blueT}}>{t.site.split(" ")[0]}</span><div style={{display:"flex",gap:4}}><Av name={t.req}/><Av name={t.ics} bg={D.tealB} fg={D.tealT}/></div></div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:10,padding:"2px 7px",borderRadius:20,background:D.blueB,color:D.blueT}}>{t.code}</span><div style={{display:"flex",gap:4}}><Av name={t.req}/><Av name={t.ics} bg={D.tealB} fg={D.tealT}/></div></div>
           </div>)}
         </div>;
       })}
@@ -471,7 +453,7 @@ function PickItApp({initialUser,onLogout}){
         <thead><tr style={{background:D.bg2}}>{["Ticket","Site","Part","Location","Req","Used","Ret","Status","Date"].map(h=><th key={h} style={{padding:"8px 10px",textAlign:"left",fontSize:11,color:D.t3,fontWeight:500}}>{h}</th>)}</tr></thead>
         <tbody>{filtered.map((t,i)=><tr key={t.id} onClick={()=>{setSelId(t.id);setView("detail");}} style={{borderBottom:`0.5px solid ${D.border}`,cursor:"pointer",background:i%2===0?"transparent":D.bg2}}>
           <td style={{padding:"8px 10px",color:D.blue,fontWeight:600,fontSize:13}}>{t.id}</td>
-          <td style={{padding:"8px 10px",color:D.t1}}>{t.site.split(" ")[0]}</td>
+          <td style={{padding:"8px 10px",color:D.t1}}>{t.code}</td>
           <td style={{padding:"8px 10px",color:D.t1}}>{t.lines?t.lines.map(l=>l.part).join(", "):t.part}</td>
           <td style={{padding:"8px 10px",color:D.t2}}>{t.location}</td>
           <td style={{padding:"8px 10px",color:D.t1,fontWeight:500}}>{t.qtyReq}</td>
@@ -594,7 +576,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
           </div>
         )}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
-          {[["Site",selT.site],["Part",selT.lines?selT.lines.map(l=>l.part).join(", "):selT.part],["Location",selT.location],["Requestor",selT.req],["ICS",selT.ics],["DCM Lead",selT.dcm||"—"],["Asana",selT.asana||'—']].map(([k,v])=>(
+          {[["Site",selT.code],["Part",selT.lines?selT.lines.map(l=>l.part).join(", "):selT.part],["Location",selT.location],["Requestor",selT.req],["ICS",selT.ics],["DCM Lead",selT.dcm||"—"],["Asana",selT.asana||'—']].map(([k,v])=>(
             <div key={k}><div style={{fontSize:10,color:D.t3,textTransform:"uppercase",letterSpacing:".04em",marginBottom:3}}>{k}</div><div style={{fontSize:13,fontWeight:500,color:D.t1}}>{v}</div></div>
           ))}
           {selT.taskLink&&(
@@ -662,7 +644,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
                       <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:8}}>
                         <div style={{width:8,height:8,borderRadius:2,background:D.blue,flexShrink:0}}/>
                         <span style={{fontSize:13,fontWeight:500,color:D.blueT}}>{lp.name}</span>
-                        {lp.site&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:D.blueB,color:D.blueT}}>{lp.site}</span>}
+                        {lp.code&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:D.blueB,color:D.blueT}}>{lp.code}</span>}
                         {lp.dataHall&&<span style={{fontSize:11,color:D.t3}}>Hall: <span style={{color:D.t2}}>{lp.dataHall}</span></span>}
                         {lp.subsidiary&&<span style={{fontSize:11,color:D.t3}}>Subsidiary: <span style={{color:D.t2}}>{lp.subsidiary}</span></span>}
                       </div>
@@ -721,7 +703,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
             <div style={{background:D.tealB,border:`0.5px solid ${D.teal}`,borderRadius:8,padding:"10px 14px",marginBottom:10}}>
               <div style={{fontSize:11,fontWeight:500,color:D.tealT,marginBottom:8}}>NetSuite bin transfer will fire on confirmation</div>
               <div style={{display:"flex",gap:20,flexWrap:"wrap",fontSize:12,marginBottom:8}}>
-                <div><span style={{color:D.t3}}>Site </span><span style={{color:D.tealT,fontWeight:500}}>{selT.site.split(" ")[0]}</span></div>
+                <div><span style={{color:D.t3}}>Site </span><span style={{color:D.tealT,fontWeight:500}}>{selT.code}</span></div>
                 <div><span style={{color:D.t3}}>From </span><span style={{color:D.t1}}>Stored</span></div>
                 <div><span style={{color:D.t3}}>To </span><span style={{color:D.t1}}>In Process</span></div>
                 <div><span style={{color:D.t3}}>Ref </span><span style={{color:D.t1}}>{selT.id}</span></div>
@@ -809,7 +791,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:16}}>
       <div style={{background:D.bg1,border:`0.5px solid ${D.amber}`,borderRadius:12,padding:24,width:"100%",maxWidth:500,maxHeight:"90vh",overflowY:"auto"}}>
         <div style={{fontSize:14,fontWeight:500,color:D.amberT,marginBottom:2}}>Flag excess return</div>
-        <div style={{fontSize:11,color:D.t3,marginBottom:16}}>{selT.id} · {selT.site.split(" ")[0]}</div>
+        <div style={{fontSize:11,color:D.t3,marginBottom:16}}>{selT.id} · {selT.code}</div>
 
         {/* Per-line table */}
         <div style={{background:D.bg2,borderRadius:8,overflow:"hidden",marginBottom:16}}>
@@ -893,7 +875,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
     const payload={
       type:"workorder",
       subsidiary:{name:"CoreWeave, Inc"},
-      location:{name:p.site},
+      location:{name:p.code},
       assembly:{name:"Site Consumables"},
       quantity:1,
       memo:woMemo,
@@ -948,7 +930,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
               <div style={{fontSize:11,fontWeight:500,color:D.t2,marginBottom:10}}>Work order fields</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"8px 16px"}}>
                 {[
-                  ["Site",woProject.site],
+                  ["Site",woProject.code],
                   ["Subsidiary","CoreWeave, Inc"],
                   ["Assembly","Site Consumables"],
                   ["Quantity","1"],
@@ -1124,7 +1106,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
             <div style={{fontSize:11,color:D.t3,marginBottom:4}}>Site</div>
             <select value={form.site} onChange={e=>setForm(f=>({...f,site:e.target.value}))} style={selS}>
               <option value="">Select a Locode…</option>
-              {LOCODES.map(l=><option key={l} value={l}>{l}</option>)}
+              {LOCODES.map(l=><option key={l} value={l.split(" ")[0]}>{l}</option>)}
             </select>
           </div>
           <div style={{gridColumn:"1/-1",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
@@ -1289,8 +1271,8 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
     <div>
       {/* ── Site → Project filter bar ─────────────────────────────────────── */}
       {(()=>{
-        const projectSites=[...new Set(projects.map(p=>p.site))].sort();
-        const visibleProjects=prjSiteFilter?projects.filter(p=>p.site===prjSiteFilter):projects;
+        const projectSites=[...new Set(projects.map(p=>p.code))].sort();
+        const visibleProjects=prjSiteFilter?projects.filter(p=>p.code===prjSiteFilter):projects;
         return(
           <div style={{marginBottom:14}}>
             {/* Row 1: site pills */}
@@ -1301,7 +1283,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
                 style={{fontSize:11,padding:"4px 12px",borderRadius:20,border:`0.5px solid ${!prjSiteFilter?D.blue:D.border}`,background:!prjSiteFilter?D.blueB:"transparent",color:!prjSiteFilter?D.blueT:D.t2,cursor:"pointer"}}
               >All</button>
               {projectSites.map(site=>(
-                <button key={site} onClick={()=>{setPrjSiteFilter(site);const first=projects.find(p=>p.site===site);if(first)setActivePrj(first.id);}}
+                <button key={site} onClick={()=>{setPrjSiteFilter(site);const first=projects.find(p=>p.code===site);if(first)setActivePrj(first.id);}}
                   style={{fontSize:11,padding:"4px 12px",borderRadius:20,border:`0.5px solid ${prjSiteFilter===site?D.blue:D.border}`,background:prjSiteFilter===site?D.blueB:"transparent",color:prjSiteFilter===site?D.blueT:D.t2,cursor:"pointer"}}
                 >{site}</button>
               ))}
@@ -1324,7 +1306,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
           <div style={{fontSize:12,fontWeight:500,color:D.amberT,marginBottom:12}}>New project</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
             <div style={{gridColumn:"1/-1"}}><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Project name</div><input value={pForm.name} onChange={e=>setPForm(f=>({...f,name:e.target.value}))} placeholder="e.g. OBG01 DH2 Optics, Cables & Consumables" style={inpS}/></div>
-            <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Site</div><select value={pForm.site} onChange={e=>setPForm(f=>({...f,site:e.target.value}))} style={selS}><option value="">Select…</option>{LOCODES.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
+            <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Site</div><select value={pForm.site} onChange={e=>setPForm(f=>({...f,site:e.target.value}))} style={selS}><option value="">Select…</option>{LOCODES.map(s=><option key={s} value={s.split(" ")[0]}>{s}</option>)}</select></div>
             <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Data hall</div><input value={pForm.dataHall} onChange={e=>setPForm(f=>({...f,dataHall:e.target.value}))} placeholder="DH2" style={inpS}/></div>
             <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Subsidiary</div><input value={pForm.subsidiary} onChange={e=>setPForm(f=>({...f,subsidiary:e.target.value}))} placeholder="CoreWeave, Inc" style={inpS}/></div>
             <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Description</div><input value={pForm.description} onChange={e=>setPForm(f=>({...f,description:e.target.value}))} placeholder="Optional" style={inpS}/></div>
@@ -1341,7 +1323,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
             <div>
               <div style={{fontSize:15,fontWeight:500,color:D.t1,marginBottom:4}}>{prj.name}</div>
               <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-                <span style={{fontSize:11,color:D.t3}}>Site: <span style={{color:D.blueT}}>{prj.site}</span></span>
+                <span style={{fontSize:11,color:D.t3}}>Site: <span style={{color:D.blueT}}>{prj.code}</span></span>
                 {prj.dataHall&&<span style={{fontSize:11,color:D.t3}}>Hall: <span style={{color:D.t2}}>{prj.dataHall}</span></span>}
                 {prj.subsidiary&&<span style={{fontSize:11,color:D.t3}}>Subsidiary: <span style={{color:D.t2}}>{prj.subsidiary}</span></span>}
               </div>
@@ -1469,7 +1451,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
                   <div style={{width:7,height:7,borderRadius:"50%",background:D.purple,flexShrink:0}}/>
                   <span style={{fontSize:12,fontWeight:700,color:D.purpleT,letterSpacing:".03em"}}>{p.woNumber}</span>
                 </div>
-                <div style={{padding:"10px 12px",fontSize:11,color:D.blueT,fontWeight:500}}>{p.site}</div>
+                <div style={{padding:"10px 12px",fontSize:11,color:D.blueT,fontWeight:500}}>{p.code}</div>
                 <div style={{padding:"10px 12px"}}>
                   <div style={{fontSize:12,fontWeight:500,color:D.t1,marginBottom:1}}>{p.name}</div>
                   {p.dataHall&&<div style={{fontSize:10,color:D.t3}}>{p.dataHall}</div>}
@@ -1487,7 +1469,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginTop:12}}>
             {[
               ["Total work orders",woProjects.length,"submitted to NetSuite"],
-              ["Sites covered",[...new Set(woProjects.map(p=>p.site))].length,"unique sites"],
+              ["Sites covered",[...new Set(woProjects.map(p=>p.code))].length,"unique sites"],
               ["Total parts installed",woProjects.reduce((s,p)=>s+p.items.reduce((si,i)=>si+i.qtyIns,0),0),"across all WOs"],
             ].map(([l,v,sub])=>(
               <div key={l} style={{background:D.bg1,border:`0.5px solid ${D.border}`,borderRadius:10,padding:"12px 14px"}}>
