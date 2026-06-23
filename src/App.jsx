@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import coreweaveLogo from "./assets/coreweave-logo.png";
 import { QRCodeSVG } from "qrcode.react";
 import ViewNav from "./pages/ViewNav.jsx";
+import FlowchartView from "./pages/FlowchartView.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
 import { ALL_CATALOG_ITEMS } from "./lib/catalog";
 import { LOCODES } from "./lib/cores/locations";
@@ -712,7 +713,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
               return lp?(
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <div style={{width:8,height:8,borderRadius:2,background:D.blue,flexShrink:0}}/>
-                  <span style={{fontSize:13,fontWeight:500,color:D.blueT,cursor:"pointer"}} onClick={()=>{setActivePrj(lp.id);setATab("projects");setView("analytics");}}>{lp.name}</span>
+                  <span style={{fontSize:13,fontWeight:500,color:D.blueT,cursor:"pointer"}} onClick={()=>{setActivePrj(lp.id);setView("projects");}}>{lp.name}</span>
                   <span style={{fontSize:10,color:D.t3}}>↗ view project</span>
                 </div>
               ):<span style={{fontSize:13,color:D.t3}}>Project not found</span>;
@@ -858,8 +859,8 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
                 return lp?(
                   <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                     <div style={{width:8,height:8,borderRadius:2,background:D.green,flexShrink:0}}/>
-                    <span style={{fontSize:13,fontWeight:500,color:D.greenT,cursor:"pointer"}} onClick={()=>{setActivePrj(lp.id);setATab("projects");setView("analytics");}}>{lp.name}</span>
-                    <span style={{fontSize:10,color:D.t3,cursor:"pointer"}} onClick={()=>{setActivePrj(lp.id);setATab("projects");setView("analytics");}}>↗ view project</span>
+                    <span style={{fontSize:13,fontWeight:500,color:D.greenT,cursor:"pointer"}} onClick={()=>{setActivePrj(lp.id);setView("projects");}}>{lp.name}</span>
+                    <span style={{fontSize:10,color:D.t3,cursor:"pointer"}} onClick={()=>{setActivePrj(lp.id);setView("projects");}}>↗ view project</span>
                     <button onClick={()=>setTickets(p=>p.map(t=>t.id===selT.id?{...t,projectId:null}:t))} style={{fontSize:10,padding:"2px 8px",borderRadius:4,border:`0.5px solid ${D.border}`,background:"transparent",color:D.t3,cursor:"pointer",marginLeft:"auto"}}>Unlink</button>
                   </div>
                 ):<span style={{fontSize:12,color:D.t3}}>Project not found.</span>;
@@ -1562,7 +1563,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
             </div>
             {woProjects.map((p,i)=>(
               <div key={p.id} style={{display:"grid",gridTemplateColumns:"120px 130px 1fr 130px 110px 100px",borderTop:i>0?`0.5px solid ${D.border}`:"none",background:i%2===0?"transparent":D.bg2,alignItems:"center",cursor:"pointer"}}
-                onClick={()=>{setActivePrj(p.id);setATab("projects");}}
+                onClick={()=>{setActivePrj(p.id);setView("projects");}}
               >
                 <div style={{padding:"10px 12px",display:"flex",alignItems:"center",gap:7}}>
                   <div style={{width:7,height:7,borderRadius:"50%",background:D.purple,flexShrink:0}}/>
@@ -1606,17 +1607,18 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
       {NsToast}{IcsToast}{ExcessModal}{FormModal}{WoModal}
       {Topbar}
       <div style={{flex:1,padding:16,overflowY:"auto",display:"flex",flexDirection:"column"}}>
-        {view!=="detail"&&view!=="analytics"&&MRow}
+        {view!=="detail"&&view!=="analytics"&&view!=="flowchart"&&view!=="projects"&&MRow}
         {view==="board"&&BoardView}
         {view==="list"&&ListView}
         {view==="detail"&&DetailView}
+        {view==="projects"&&ProjectTab}
+        {view==="flowchart"&&<FlowchartView theme={D}/>}
         {view==="analytics"&&(
           <div>
             <div style={{display:"flex",gap:8,marginBottom:14,borderBottom:`0.5px solid ${D.border}`,paddingBottom:10}}>
-              {[["overview","Overview"],["projects","Project tracker"],["workorders","Work Order List"]].map(([k,label])=><button key={k} onClick={()=>setATab(k)} style={{fontSize:12,padding:"5px 16px",borderRadius:6,border:"none",background:aTab===k?D.bg3:"transparent",color:aTab===k?D.t1:D.t2,cursor:"pointer",fontWeight:aTab===k?500:400}}>{label}</button>)}
+              {[["overview","Overview"],["workorders","Work Order List"]].map(([k,label])=><button key={k} onClick={()=>setATab(k)} style={{fontSize:12,padding:"5px 16px",borderRadius:6,border:"none",background:aTab===k?D.bg3:"transparent",color:aTab===k?D.t1:D.t2,cursor:"pointer",fontWeight:aTab===k?500:400}}>{label}</button>)}
             </div>
             {aTab==="overview"&&OverviewTab}
-            {aTab==="projects"&&ProjectTab}
             {aTab==="workorders"&&WorkOrderTab}
           </div>
         )}

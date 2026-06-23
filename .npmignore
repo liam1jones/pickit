@@ -1,0 +1,17 @@
+# Files / directories to exclude from npm pack snapshots.
+# Used to keep backup/ tarballs lean — see backup/pickit-*.tgz.
+
+# build & vendor
+node_modules
+dist
+
+# previous snapshots and their unpacked staging dir
+backup
+package
+
+# editor / OS cruft
+.DS_Store
+*.local
+
+# stray empty file
+Close
