@@ -45,3 +45,5 @@ export {
   getRoleDotMap,
   type RolePresentationTheme,
 } from "./presentation";
+
+export { ROLES, type FlowchartRole, type FlowchartRoleKey } from "./roles";

@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import lumaOpticsCatalog from "./lib/catalog/lumaOptics";
+import lumaOpticsCatalog from "./lib/catalog/lumaOptics.js";
 import coreweaveLogo from "./assets/coreweave-logo.png";
 import { QRCodeSVG } from "qrcode.react";
 import ViewNav from "./pages/ViewNav.jsx";
