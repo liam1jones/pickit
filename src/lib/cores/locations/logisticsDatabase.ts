@@ -1,6 +1,6 @@
 /**
  * Logistics fields from `docs/Corey ICS Site list.ods` → sheet **Logistics Database**.
- * Keys are LOCODE values from column A. Regenerate: `python3 scripts/ingest-logistics-ods.py`
+ * Keys are LOCODE values from column A. Regenerate: `python3 scripts/ingestLogisticsOds.py`
  */
 import type { SiteLogistics } from "./types";
 
