@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from "react";
-import coreweaveLogo from "./assets/coreweave-logo.png";
 import { QRCodeSVG } from "qrcode.react";
-import ViewNav from "./pages/ViewNav.jsx";
+import TopBar from "./components/global/nav.topBar";
 import FlowchartView from "./pages/FlowchartView.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
 import { ALL_CATALOG_ITEMS } from "./lib/catalog";
@@ -9,17 +8,18 @@ import { LOCODES } from "./lib/cores/locations";
 import { VENDOR_MAP } from "./lib/cores/vendors";
 import { getRoleColorMap, getRoleDotMap } from "./lib/roles";
 import { INIT_PROJECTS, INIT_TICKETS, mkD } from "./lib/dummyData/mockDataCenter";
+import { USERS } from "./lib/dummyData/demoUsers";
 import { CATALOG_GROUP_LABEL, D, getCatalogGroupColorMap } from "./lib/cores/inventory";
 import { CATS, getCategoryColorMap } from "./lib/cores/inventory/consumables";
+import { getStatusChipStyles, STATS } from "./components/statusStyles";
+import { PALETTE_COLOURS } from "./components/global/palleteColours";
 
 const ticketQrValue=(t)=>t?.qrPayload||`pickit://ticket/${t?.id||""}`;
 
 const parseCatalogUsd=(s)=>{if(!s||typeof s!=="string")return null;const n=Number.parseFloat(s.replace(/[$,\s]/g,""));return Number.isFinite(n)?n:null;};
 
-const SC={"Open / Submitted":{bg:D.bg3,tx:D.t2,bd:D.border},"Pending Approval":{bg:D.bg3,tx:D.t2,bd:D.border},"Approved – Pending Transfer":{bg:D.amberB,tx:D.amberT,bd:D.amber},"Picked / Staged":{bg:"#1a2e1a",tx:"#6ee7b7",bd:"#34d399"},"In Progress – Work Underway":{bg:D.tealB,tx:D.tealT,bd:D.teal},"Excess Return Pending":{bg:D.amberB,tx:D.amberT,bd:D.amber},"Resolved / Closed":{bg:D.greenB,tx:D.greenT,bd:D.green}};
+const SC=getStatusChipStyles(D);
 
-const STATS=["Open / Submitted","Pending Approval","Approved – Pending Transfer","Picked / Staged","In Progress – Work Underway","Excess Return Pending","Resolved / Closed"];
-const PC=["#3b82f6","#2dd4bf","#a78bfa","#f59e0b","#22c55e","#f87171","#e879f9","#fb923c"];
 const CC=getCategoryColorMap(D);
 const ROLE_COLOR=getRoleColorMap(D);
 const ROLE_DOT=getRoleDotMap(D);
@@ -47,8 +47,6 @@ const PARTS_CATALOG_FLAT=Object.entries(PARTS_CATALOG).flatMap(([cat,items])=>it
 
 const CATALOG_PRICE_BY_PN=(()=>{const m=new Map();for(const it of ALL_CATALOG_ITEMS){const p=parseCatalogUsd(it.estimatedCost);const k=(it.partNumber||"").trim().toUpperCase();if(k&&p!=null&&!m.has(k))m.set(k,p);}return m;})();
 const bomUnitPrice=(item)=>{const k=(item.partNumber||"").trim().toUpperCase();if(k&&CATALOG_PRICE_BY_PN.has(k))return CATALOG_PRICE_BY_PN.get(k);return item.unitPrice||0;};
-
-const USERS={DCT:[{name:"J. Torres",email:"jtorres@coreweave.com"},{name:"D. Kim",email:"dkim@coreweave.com"},{name:"A. Reyes",email:"areyes@coreweave.com"}],"DCM / Tiger Team":[{name:"Graham Lawson",email:"glawson@coreweave.com"},{name:"Jesse Ball",email:"jball@coreweave.com"},{name:"Adam Razac",email:"arazac@coreweave.com"},{name:"Liam Jones (Admin)",email:"ljones@coreweave.com"}],ICS:[{name:"Cole Megna",email:"cmegna@coreweave.com"},{name:"Frank D'Arrigo",email:"fdarrigo@coreweave.com"},{name:"Jesus Robles (RICM)",email:"jrobles@coreweave.com"},{name:"Matt Whittle (RICM)",email:"mwhittle@coreweave.com"},{name:"Rhys Lopez-Lloyd (RICM)",email:"rlopezlloyd@coreweave.com"}]};
 
 const tod=()=>new Date().toISOString().split("T")[0];
 
@@ -368,53 +366,24 @@ function PickItApp({initialUser,onLogout}){
   function exportOverview(){if(!bySite.length)return;const rows=[];bySite.forEach(([site,d])=>Object.entries(d.parts).forEach(([part,qty])=>rows.push({"Site":site,"Part Number":part,"Qty Released":qty,"From":aFrom,"To":aTo})));csvExport(rows,`optics_summary_${tod()}.csv`);}
 
   const Topbar=(
-    <div style={{background:D.bg1,borderBottom:`0.5px solid ${D.border}`}}>
-      <div style={{padding:"10px 16px",display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:12}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,justifySelf:"start"}}>
-          <div style={{fontWeight:500,fontSize:13,color:D.blue,letterSpacing:".05em"}}>PICK</div>
-          <ViewNav view={view} onChange={setView} theme={D}/>
-        </div>
-        <div style={{justifySelf:"center",display:"flex",alignItems:"center",gap:12,whiteSpace:"nowrap"}}>
-          <span style={{fontSize:28,fontWeight:800,color:D.t1,letterSpacing:"-.01em",fontFamily:"'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif"}}>
-            Pick<span style={{color:"#1E40F6"}}>IT</span>
-          </span>
-          <span style={{fontSize:11,color:D.t3}}>powered by</span>
-          <img src={coreweaveLogo} alt="CoreWeave" style={{height:32,width:"auto",display:"block",transform:"translateY(-3px)"}}/>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:10,justifySelf:"end"}}>
-          <div style={{position:"relative"}}>
-            <div onClick={()=>setShowUserMenu(!showUserMenu)} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:"4px 10px",borderRadius:8,border:`0.5px solid ${D.border}`,background:D.bg2}}>
-              <Av name={user.name}/>
-              <div><div style={{fontSize:11,fontWeight:500,color:D.t1}}>{user.name.split(" ").slice(0,2).join(" ")}</div><div style={{fontSize:10,color:D.t3}}>{user.role}</div></div>
-            </div>
-            {showUserMenu&&<div style={{position:"absolute",right:0,top:"calc(100% + 4px)",background:D.bg1,border:`0.5px solid ${D.border}`,borderRadius:10,zIndex:99,minWidth:230,padding:8}}>
-              <div style={{fontSize:10,color:D.t3,padding:"4px 8px 6px"}}>Switch role / user</div>
-              {Object.entries(USERS).map(([role,us])=>us.map(u=><div key={u.email} onClick={()=>{setUser({name:u.name,role,email:u.email});setShowUserMenu(false);}} style={{padding:"7px 8px",fontSize:12,cursor:"pointer",borderRadius:6,background:user.email===u.email?D.bg3:"transparent",color:D.t1,display:"flex",alignItems:"center",gap:8}}><Av name={u.name} bg={D.purpleB} fg={D.purpleT}/><div><div style={{fontWeight:500}}>{u.name}</div><div style={{fontSize:10,color:D.t3}}>{role}</div></div></div>))}
-              <div style={{height:"0.5px",background:D.border,margin:"6px 0"}}/>
-              <div onClick={()=>{setShowUserMenu(false);onLogout&&onLogout();}} style={{padding:"7px 8px",fontSize:12,cursor:"pointer",borderRadius:6,color:D.redT,display:"flex",alignItems:"center",gap:8}} onMouseEnter={e=>e.currentTarget.style.background=D.bg3} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:"50%",background:D.redB,color:D.redT,fontSize:12,fontWeight:600}}>↩</span>
-                <div><div style={{fontWeight:500}}>Sign out</div><div style={{fontSize:10,color:D.t3}}>{user.email}</div></div>
-              </div>
-            </div>}
-          </div>
-          <button onClick={()=>setShowForm(true)} style={{fontSize:13,padding:"8px 20px",borderRadius:8,border:"none",background:D.blue,color:"#fff",cursor:"pointer",fontWeight:500,letterSpacing:".01em"}}>+ New ticket</button>
-        </div>
-      </div>
-      {(view==="board"||view==="list")&&(
-        <div style={{padding:"6px 16px 10px",display:"flex",alignItems:"center",gap:8,borderTop:`0.5px solid ${D.border}`}}>
-          <span style={{fontSize:11,color:D.t3,marginRight:4}}>Filter:</span>
-          <select value={fSite} onChange={e=>setFSite(e.target.value)} style={{...selS,maxWidth:160,fontSize:11,padding:"4px 8px"}}>
-            <option value="">All sites</option>
-            {LOCODES.map(l=><option key={l} value={l.split(" ")[0]}>{l.split(" ")[0]}</option>)}
-          </select>
-          <select value={fStat} onChange={e=>setFStat(e.target.value)} style={{...selS,fontSize:11,padding:"4px 8px",maxWidth:220}}>
-            <option value="">All statuses</option>
-            {STATS.map(s=><option key={s}>{s}</option>)}
-          </select>
-          {(fSite||fStat)&&<button onClick={()=>{setFSite("");setFStat("");}} style={{fontSize:11,padding:"4px 10px",borderRadius:6,border:`0.5px solid ${D.border}`,background:"transparent",color:D.t3,cursor:"pointer"}}>Clear</button>}
-        </div>
-      )}
-    </div>
+    <TopBar
+      theme={D}
+      view={view}
+      onViewChange={setView}
+      user={user}
+      users={USERS}
+      showUserMenu={showUserMenu}
+      onToggleUserMenu={()=>setShowUserMenu(!showUserMenu)}
+      onSelectUser={(u)=>{setUser({name:u.name,role:u.role,email:u.email});setShowUserMenu(false);}}
+      onLogout={onLogout}
+      onNewTicket={()=>setShowForm(true)}
+      fSite={fSite}
+      onFSiteChange={setFSite}
+      fStat={fStat}
+      onFStatChange={setFStat}
+      locodes={LOCODES}
+      statuses={STATS}
+    />
   );
 
   const MRow=(
@@ -1237,10 +1206,10 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
               <Bar v={data.total} m={maxS} c={D.blue}/>
               {Object.entries(data.parts).sort((a,b)=>b[1]-a[1]).map(([part,qty],pi)=>(
                 <div key={part} style={{display:"flex",alignItems:"center",gap:8,marginTop:4,paddingLeft:8}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:PC[pi%PC.length],flexShrink:0}}/>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:PALETTE_COLOURS[pi%PALETTE_COLOURS.length],flexShrink:0}}/>
                   <span style={{fontSize:10,color:D.t2,flex:1}}>{part}</span>
                   <span style={{fontSize:10,color:D.t3}}>{qty}</span>
-                  <div style={{width:50,height:4,background:D.bg3,borderRadius:2,overflow:"hidden"}}><div style={{width:`${Math.round((qty/data.total)*100)}%`,height:"100%",background:PC[pi%PC.length]}}/></div>
+                  <div style={{width:50,height:4,background:D.bg3,borderRadius:2,overflow:"hidden"}}><div style={{width:`${Math.round((qty/data.total)*100)}%`,height:"100%",background:PALETTE_COLOURS[pi%PALETTE_COLOURS.length]}}/></div>
                 </div>
               ))}
               {si<bySite.length-1&&<div style={{height:"0.5px",background:D.border,margin:"10px 0 0"}}/>}
@@ -1253,10 +1222,10 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
           {byPart.map(([part,qty],pi)=>(
             <div key={part} style={{marginBottom:12}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                <div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:8,height:8,borderRadius:2,background:PC[pi%PC.length]}}/><span style={{fontSize:12,fontWeight:500,color:D.t1}}>{part}</span></div>
-                <span style={{fontSize:12,fontWeight:500,color:PC[pi%PC.length]}}>{qty}</span>
+                <div style={{display:"flex",alignItems:"center",gap:7}}><div style={{width:8,height:8,borderRadius:2,background:PALETTE_COLOURS[pi%PALETTE_COLOURS.length]}}/><span style={{fontSize:12,fontWeight:500,color:D.t1}}>{part}</span></div>
+                <span style={{fontSize:12,fontWeight:500,color:PALETTE_COLOURS[pi%PALETTE_COLOURS.length]}}>{qty}</span>
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:8}}><Bar v={qty} m={maxP} c={PC[pi%PC.length]}/><span style={{fontSize:10,color:D.t3,minWidth:32,textAlign:"right"}}>{grand>0?Math.round((qty/grand)*100):0}%</span></div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}><Bar v={qty} m={maxP} c={PALETTE_COLOURS[pi%PALETTE_COLOURS.length]}/><span style={{fontSize:10,color:D.t3,minWidth:32,textAlign:"right"}}>{grand>0?Math.round((qty/grand)*100):0}%</span></div>
               <div style={{marginTop:4,paddingLeft:15}}>{bySite.filter(([,d])=>d.parts[part]).map(([site,d])=>(
                 <div key={site} style={{display:"flex",justifyContent:"space-between",fontSize:10,color:D.t3,marginBottom:2}}><span>{site}</span><span style={{color:D.t2}}>{d.parts[part]}</span></div>
               ))}</div>
