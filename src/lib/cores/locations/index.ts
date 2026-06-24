@@ -131,5 +131,15 @@ export const ALL_LOCATIONS: CoreWeaveLocation[] = [
 /** Legacy string labels for selects (full display text). */
 export const LOCODES: string[] = ALL_LOCATIONS.map((l) => l.label);
 
+export function getLocationByCode(code: string): CoreWeaveLocation | undefined {
+  return ALL_LOCATIONS.find((l) => l.code === code);
+}
+
+/** Split comma-separated ICS contacts from a location record. */
+export function parseIcsContacts(ics: string): string[] {
+  if (!ics.trim()) return [];
+  return ics.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
 export { LOGISTICS_BY_LOCODE } from "./logisticsDatabase";
 export type { CoreWeaveLocation, SiteLogistics } from "./types";

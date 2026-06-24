@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import TopBar from "./components/global/nav.topBar";
 import FlowchartView from "./pages/FlowchartView.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
+import ProjectsPage from "./pages/page.Projects";
 import { ALL_CATALOG_ITEMS } from "./lib/catalog";
 import { LOCODES } from "./lib/cores/locations";
 import { VENDOR_MAP } from "./lib/cores/vendors";
@@ -13,6 +14,7 @@ import { CATALOG_GROUP_LABEL, D, getCatalogGroupColorMap } from "./lib/cores/inv
 import { CATS, getCategoryColorMap } from "./lib/cores/inventory/consumables";
 import { getStatusChipStyles, STATS } from "./components/statusStyles";
 import { PALETTE_COLOURS } from "./components/global/palleteColours";
+import NewTicketModal, { EMPTY_TICKET_FORM } from "./components/modals/modal.newTicket";
 
 const ticketQrValue=(t)=>t?.qrPayload||`pickit://ticket/${t?.id||""}`;
 
@@ -199,7 +201,7 @@ function PickItApp({initialUser,onLogout}){
   const [showUserMenu,setShowUserMenu]=useState(false);
   const [fSite,setFSite]=useState("");
   const [fStat,setFStat]=useState("");
-  const [form,setForm]=useState({site:"",dataHall:"",rack:"",ru:"",ics:"",dcm:"",taskLink:"",lines:[{id:1,part:"",qty:""}]});
+  const [form,setForm]=useState(EMPTY_TICKET_FORM);
   const [comment,setComment]=useState("");
   const [showExcess,setShowExcess]=useState(false);
   const [exF,setExF]=useState([]);
@@ -269,7 +271,7 @@ function PickItApp({initialUser,onLogout}){
     if(autoApprove)baseLog.push({ts:now(),who:user.name,role:user.role,action:"Ticket approved",detail:"Auto-approved — submitted by DCM / Tiger Team Lead"});
     const t={id,code:form.site,lines,location:loc,qtyReq:lines.reduce((s,l)=>s+l.qtyReq,0),qtyIns:null,qtyRet:null,req:user.name,ics:form.ics,dcm:form.dcm||null,taskLink:form.taskLink||"",projectId:null,status:autoApprove?"Approved – Pending Transfer":"Pending Approval",date:tod(),comments:[],asana:"",qrPayload,log:baseLog};
     setTickets(p=>[t,...p]);
-    setForm({site:"",dataHall:"",rack:"",ru:"",ics:"",dcm:"",taskLink:"",lines:[{id:1,part:"",qty:""}]});
+    setForm(EMPTY_TICKET_FORM);
     setShowForm(false);
     setSelId(t.id);setView("detail");
     if(autoApprove){
@@ -1039,147 +1041,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
     </div>
   );
 
-  const lineIdRef=useRef(2);
-  function addLine(){lineIdRef.current++;setForm(f=>({...f,lines:[...f.lines,{id:lineIdRef.current,part:"",qty:""}]}));}
-  function removeLine(id){setForm(f=>({...f,lines:f.lines.filter(l=>l.id!==id)}));}
-  function updateLine(id,field,val){setForm(f=>({...f,lines:f.lines.map(l=>l.id===id?{...l,[field]:val}:l)}));}
-  const validLineCount=form.lines.filter(l=>l.part.trim()&&parseInt(l.qty)>0).length;
-  const missingFields=[];
-  if(!form.site)missingFields.push("Site");
-  if(!form.dataHall)missingFields.push("Data Hall");
-  if(!form.rack)missingFields.push("Rack");
-  if(!form.ics)missingFields.push("Onsite ICS");
-  if(validLineCount===0)missingFields.push("at least one part & qty");
-  const formValid=missingFields.length===0;
   const formAutoApprove=user.role==="DCM / Tiger Team";
-
-  const FormModal=showForm&&(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,padding:16}}>
-      <div style={{background:D.bg1,borderRadius:12,border:`0.5px solid ${D.border}`,padding:24,width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto"}}>
-        <div style={{fontSize:14,fontWeight:500,color:D.t1,marginBottom:4}}>New pick ticket</div>
-        <div style={{fontSize:11,color:D.t3,marginBottom:16}}>Shared fields apply to all line items below.</div>
-
-        {formAutoApprove&&(
-          <div style={{background:D.greenB,border:`0.5px solid ${D.green}`,borderRadius:8,padding:"10px 12px",marginBottom:14,display:"flex",gap:10,alignItems:"flex-start"}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:D.green,flexShrink:0,marginTop:5}}/>
-            <div style={{fontSize:11,color:D.greenT,lineHeight:1.5}}>
-              <div style={{fontWeight:600,marginBottom:2}}>Auto-approval enabled</div>
-              <div style={{color:D.t2}}>As a DCM / Tiger Team Lead, your tickets skip approval. The selected <span style={{color:D.greenT,fontWeight:500}}>Onsite ICS</span> will be notified immediately to pick &amp; stage.</div>
-            </div>
-          </div>
-        )}
-
-        {/* Shared fields */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-          <div style={{gridColumn:"1/-1"}}>
-            <div style={{fontSize:11,color:D.t3,marginBottom:4}}>Site</div>
-            <select value={form.site} onChange={e=>setForm(f=>({...f,site:e.target.value}))} style={selS}>
-              <option value="">Select a Locode…</option>
-              {LOCODES.map(l=><option key={l} value={l.split(" ")[0]}>{l}</option>)}
-            </select>
-          </div>
-          <div style={{gridColumn:"1/-1",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-            <div>
-              <div style={{fontSize:11,color:D.t3,marginBottom:4}}>Data Hall</div>
-              <input value={form.dataHall} onChange={e=>setForm(f=>({...f,dataHall:e.target.value}))} placeholder="e.g. DH3" style={inpS}/>
-            </div>
-            <div>
-              <div style={{fontSize:11,color:D.t3,marginBottom:4}}>Rack</div>
-              <input value={form.rack} onChange={e=>setForm(f=>({...f,rack:e.target.value}))} placeholder="e.g. B07" style={inpS}/>
-            </div>
-            <div>
-              <div style={{fontSize:11,color:D.t3,marginBottom:4}}>RU <span style={{fontSize:10,color:D.t3,fontWeight:400}}>(optional)</span></div>
-              <input value={form.ru} onChange={e=>setForm(f=>({...f,ru:e.target.value}))} placeholder="e.g. U12" style={inpS}/>
-            </div>
-          </div>
-          <div style={{gridColumn:"1/-1"}}>
-            <div style={{fontSize:11,color:D.t3,marginBottom:4}}>Onsite ICS</div>
-            <select value={form.ics} onChange={e=>setForm(f=>({...f,ics:e.target.value}))} style={selS}>
-              <option value="">Select ICS…</option>
-              {USERS["ICS"].map(u=><option key={u.email} value={u.name}>{u.name}</option>)}
-            </select>
-          </div>
-          <div style={{gridColumn:"1/-1"}}>
-            <div style={{fontSize:11,color:D.t3,marginBottom:4}}>DCM / Tiger Team Lead <span style={{fontSize:10,color:D.t3,fontWeight:400}}>(optional)</span></div>
-            <select value={form.dcm} onChange={e=>setForm(f=>({...f,dcm:e.target.value}))} style={selS}>
-              <option value="">Select DCM / Tiger Team Lead…</option>
-              {USERS["DCM / Tiger Team"].map(u=><option key={u.email} value={u.name}>{u.name}</option>)}
-            </select>
-          </div>
-          <div style={{gridColumn:"1/-1"}}>
-            <div style={{fontSize:11,color:D.t3,marginBottom:4}}>Jira / Asana Task Link <span style={{fontSize:10,color:D.t3,fontWeight:400}}>(optional)</span></div>
-            <input
-              value={form.taskLink}
-              onChange={e=>setForm(f=>({...f,taskLink:e.target.value}))}
-              placeholder="https://app.asana.com/... or https://coreweave.atlassian.net/..."
-              style={inpS}
-            />
-          </div>
-        </div>
-
-        {/* Line items */}
-        <div style={{borderTop:`0.5px solid ${D.border}`,paddingTop:14,marginBottom:10}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{fontSize:11,fontWeight:500,color:D.t2}}>Parts &amp; quantities</div>
-            <div style={{fontSize:10,color:D.t3}}>{form.lines.length} line{form.lines.length!==1?"s":""} · {validLineCount} valid</div>
-          </div>
-
-          {/* Column headers */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 90px 28px",gap:6,marginBottom:6,paddingLeft:2}}>
-            <div style={{fontSize:10,color:D.t3}}>Part number</div>
-            <div style={{fontSize:10,color:D.t3}}>Qty</div>
-            <div/>
-          </div>
-
-          {form.lines.map((line,idx)=>(
-            <div key={line.id} style={{display:"grid",gridTemplateColumns:"1fr 90px 28px",gap:6,marginBottom:6,alignItems:"center"}}>
-              <PartSearch value={line.part} onChange={val=>updateLine(line.id,"part",val)}/>
-              <input
-                type="number"
-                min="1"
-                value={line.qty}
-                onChange={e=>updateLine(line.id,"qty",e.target.value)}
-                placeholder="0"
-                style={{...inpS,textAlign:"center"}}
-              />
-              {form.lines.length>1?(
-                <button
-                  onClick={()=>removeLine(line.id)}
-                  style={{width:28,height:28,borderRadius:6,border:`0.5px solid ${D.redB}`,background:"transparent",color:D.redT,cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
-                  title="Remove line"
-                >×</button>
-              ):<div/>}
-            </div>
-          ))}
-
-          <button
-            onClick={addLine}
-            style={{marginTop:4,fontSize:11,padding:"5px 12px",borderRadius:6,border:`0.5px solid ${D.blue}`,background:"transparent",color:D.blueT,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}
-          >
-            <span style={{fontSize:15,lineHeight:1}}>+</span> Add part
-          </button>
-        </div>
-
-        <div style={{borderTop:`0.5px solid ${D.border}`,paddingTop:14}}>
-          {!formValid&&(
-            <div style={{background:D.amberB,border:`0.5px solid ${D.amber}`,borderRadius:7,padding:"8px 11px",marginBottom:10,fontSize:11,color:D.amberT,display:"flex",gap:8,alignItems:"flex-start"}}>
-              <span style={{fontWeight:600}}>Missing:</span>
-              <span style={{color:D.t2}}>{missingFields.join(", ")}</span>
-            </div>
-          )}
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-            <button onClick={()=>{setShowForm(false);setForm({site:"",dataHall:"",rack:"",ru:"",ics:"",dcm:"",taskLink:"",lines:[{id:1,part:"",qty:""}]});}} style={{...btnS,background:D.bg3,color:D.t2,border:`0.5px solid ${D.border}`,fontWeight:400}}>Cancel</button>
-            <button
-              onClick={submitTicket}
-              disabled={!formValid}
-              title={formValid?(formAutoApprove?"Submit & auto-approve":"Submit ticket"):`Complete: ${missingFields.join(", ")}`}
-              style={{...btnS,background:formValid?(formAutoApprove?D.green:D.blue):D.bg3,color:formValid?"#fff":D.t3,cursor:formValid?"pointer":"not-allowed",opacity:formValid?1:0.7}}
-            >{formAutoApprove?"Submit & auto-approve":"Submit ticket"}</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   const OverviewTab=(
     <div>
@@ -1236,165 +1098,7 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
     </div>
   );
 
-  const ProjectTab=(
-    <div>
-      {/* ── Site → Project filter bar ─────────────────────────────────────── */}
-      {(()=>{
-        const projectSites=[...new Set(projects.map(p=>p.code))].sort();
-        const visibleProjects=prjSiteFilter?projects.filter(p=>p.code===prjSiteFilter):projects;
-        return(
-          <div style={{marginBottom:14}}>
-            {/* Row 1: site pills */}
-            <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:8}}>
-              <span style={{fontSize:10,color:D.t3,marginRight:2,flexShrink:0}}>Site</span>
-              <button
-                onClick={()=>{setPrjSiteFilter("");}}
-                style={{fontSize:11,padding:"4px 12px",borderRadius:20,border:`0.5px solid ${!prjSiteFilter?D.blue:D.border}`,background:!prjSiteFilter?D.blueB:"transparent",color:!prjSiteFilter?D.blueT:D.t2,cursor:"pointer"}}
-              >All</button>
-              {projectSites.map(site=>(
-                <button key={site} onClick={()=>{setPrjSiteFilter(site);const first=projects.find(p=>p.code===site);if(first)setActivePrj(first.id);}}
-                  style={{fontSize:11,padding:"4px 12px",borderRadius:20,border:`0.5px solid ${prjSiteFilter===site?D.blue:D.border}`,background:prjSiteFilter===site?D.blueB:"transparent",color:prjSiteFilter===site?D.blueT:D.t2,cursor:"pointer"}}
-                >{site}</button>
-              ))}
-            </div>
-            {/* Row 2: project pills for selected site */}
-            <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",paddingLeft:36}}>
-              {visibleProjects.map(p=>(
-                <button key={p.id} onClick={()=>setActivePrj(p.id)}
-                  style={{fontSize:11,padding:"4px 12px",borderRadius:20,border:`0.5px solid ${activePrj===p.id?D.teal:D.border}`,background:activePrj===p.id?D.tealB:"transparent",color:activePrj===p.id?D.tealT:D.t2,cursor:"pointer",maxWidth:240,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}
-                  title={p.name}
-                >{p.name}</button>
-              ))}
-{user.role==="ICS"&&<button onClick={()=>setShowNewPrj(true)} style={{fontSize:11,padding:"4px 11px",borderRadius:20,border:`0.5px solid ${D.green}`,background:D.greenB,color:D.greenT,cursor:"pointer",flexShrink:0,fontWeight:500}}>+ New</button>}
-            </div>
-          </div>
-        );
-      })()}
-      {showNewPrj&&(
-        <div style={{background:D.bg1,border:`0.5px solid ${D.amber}`,borderRadius:10,padding:16,marginBottom:14}}>
-          <div style={{fontSize:12,fontWeight:500,color:D.amberT,marginBottom:12}}>New project</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-            <div style={{gridColumn:"1/-1"}}><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Project name</div><input value={pForm.name} onChange={e=>setPForm(f=>({...f,name:e.target.value}))} placeholder="e.g. OBG01 DH2 Optics, Cables & Consumables" style={inpS}/></div>
-            <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Site</div><select value={pForm.site} onChange={e=>setPForm(f=>({...f,site:e.target.value}))} style={selS}><option value="">Select…</option>{LOCODES.map(s=><option key={s} value={s.split(" ")[0]}>{s}</option>)}</select></div>
-            <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Data hall</div><input value={pForm.dataHall} onChange={e=>setPForm(f=>({...f,dataHall:e.target.value}))} placeholder="DH2" style={inpS}/></div>
-            <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Subsidiary</div><input value={pForm.subsidiary} onChange={e=>setPForm(f=>({...f,subsidiary:e.target.value}))} placeholder="CoreWeave, Inc" style={inpS}/></div>
-            <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Description</div><input value={pForm.description} onChange={e=>setPForm(f=>({...f,description:e.target.value}))} placeholder="Optional" style={inpS}/></div>
-          </div>
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-            <button onClick={()=>setShowNewPrj(false)} style={{...btnS,background:D.bg3,color:D.t2,border:`0.5px solid ${D.border}`,fontWeight:400}}>Cancel</button>
-            <button onClick={createPrj} style={{...btnS,background:D.amber,color:"#000"}}>Create</button>
-          </div>
-        </div>
-      )}
-      {prj&&<>
-        <div style={{background:D.bg1,border:`0.5px solid ${D.border}`,borderRadius:10,padding:"14px 16px",marginBottom:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:8}}>
-            <div>
-              <div style={{fontSize:15,fontWeight:500,color:D.t1,marginBottom:4}}>{prj.name}</div>
-              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-                <span style={{fontSize:11,color:D.t3}}>Site: <span style={{color:D.blueT}}>{prj.code}</span></span>
-                {prj.dataHall&&<span style={{fontSize:11,color:D.t3}}>Hall: <span style={{color:D.t2}}>{prj.dataHall}</span></span>}
-                {prj.subsidiary&&<span style={{fontSize:11,color:D.t3}}>Subsidiary: <span style={{color:D.t2}}>{prj.subsidiary}</span></span>}
-              </div>
-            </div>
-            {prj.woNumber?(
-              <div style={{display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderRadius:8,background:"#1a1a2e",border:`0.5px solid ${D.purple}`}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:D.purple,flexShrink:0}}/>
-                <div>
-                  <div style={{fontSize:9,color:D.t3,textTransform:"uppercase",letterSpacing:".05em",marginBottom:1}}>Work Order</div>
-                  <div style={{fontSize:13,fontWeight:700,color:D.purpleT,letterSpacing:".04em"}}>{prj.woNumber}</div>
-                </div>
-              </div>
-            ):(
-              <button onClick={()=>{setWoProject(prj);setWoStatus(null);setWoMemo(`Work Order — ${prj.name}`);setShowWO(true);}} style={{...btnS,background:D.purple,color:"#fff",fontSize:11,padding:"6px 14px",border:`0.5px solid ${D.purple}`}}>Create Work Order</button>
-            )}
-          </div>
-          {prjStats&&(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:10}}>
-              {[["Planned",prjStats.tot,D.t2],["Returned",prjStats.ret,D.amberT],["Installed",prjStats.ins,D.tealT]].map(([l,v,c])=>(
-                <div key={l} style={{background:D.bg2,borderRadius:8,padding:"8px 10px"}}><div style={{fontSize:10,color:D.t3,marginBottom:2}}>{l}</div><div style={{fontSize:18,fontWeight:500,color:c}}>{v}</div></div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div style={{background:D.bg1,border:`0.5px solid ${D.border}`,borderRadius:10,overflow:"hidden",marginBottom:10}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",borderBottom:`0.5px solid ${D.border}`}}>
-            <div style={{fontSize:12,fontWeight:500,color:D.t1}}>Bill of materials</div>
-            {!prj.woNumber&&(
-              <button onClick={()=>{setEditItem(null);setIForm({partNumber:"",description:"",category:"Optics",unit:"ea",qtyPlanned:"",qtyIns:"",qtyRet:"",unitPrice:""});setShowItemForm(true);}} style={{...btnS,background:D.bg3,color:D.t2,border:`0.5px solid ${D.border}`,fontWeight:400,fontSize:11,padding:"4px 12px"}}>+ Add item</button>
-            )}
-          </div>
-          {prj.woNumber&&(
-            <div style={{padding:"8px 14px",background:"#1a1a2e",borderBottom:`0.5px solid ${D.purple}`,display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:D.purple,flexShrink:0}}/>
-              <span style={{fontSize:11,color:D.t3}}>BOM locked — Work Order <span style={{color:D.purpleT,fontWeight:600}}>{prj.woNumber}</span> has been created for this project.</span>
-            </div>
-          )}
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,tableLayout:"fixed"}}>
-            <thead><tr style={{background:D.bg2}}>{["Part #","Description","Category","Planned","Returned","Installed","Unit Price","Total Value",""].map(h=><th key={h} style={{padding:"7px 10px",textAlign:"left",fontSize:10,color:D.t3,fontWeight:500}}>{h}</th>)}</tr></thead>
-            <tbody>
-              {prj.items.length===0&&<tr><td colSpan={8} style={{padding:"20px",textAlign:"center",fontSize:12,color:D.t3,fontStyle:"italic"}}>No items yet.</td></tr>}
-              {prj.items.map((item,i)=>{
-                const u=bomUnitPrice(item);
-                return <tr key={item.id} style={{borderTop:`0.5px solid ${D.border}`,background:i%2===0?"transparent":D.bg2}}>
-                  <td style={{padding:"7px 10px",color:D.blueT,fontWeight:500}}>{item.partNumber}</td>
-                  <td style={{padding:"7px 10px",color:D.t1}}>{item.description}</td>
-                  <td style={{padding:"7px 10px"}}><span style={{fontSize:10,padding:"2px 7px",borderRadius:20,background:D.bg3,color:CC[item.category]||D.t2,border:`0.5px solid ${CC[item.category]||D.border}`}}>{item.category}</span></td>
-                  <td style={{padding:"7px 10px",color:D.t2}}>{item.qtyPlanned}</td>
-                  <td style={{padding:"7px 10px",color:D.amberT}}>{item.qtyRet}</td>
-                  <td style={{padding:"7px 10px",color:D.tealT,fontWeight:500}}>{item.qtyIns}</td>
-                  <td style={{padding:"7px 10px",color:D.t2,fontSize:11}}>{u>0?`$${u.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`:"—"}</td>
-                  <td style={{padding:"7px 10px",color:D.greenT,fontSize:12,fontWeight:500}}>{u>0?`$${(u*item.qtyPlanned).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`:"—"}</td>
-                  <td style={{padding:"7px 10px"}}>
-                    {prj.woNumber?(
-                      <span style={{fontSize:10,color:D.t3,fontStyle:"italic"}}>Locked</span>
-                    ):(
-                      <div style={{display:"flex",gap:4}}>
-                        <button onClick={()=>startEdit(item)} style={{fontSize:10,padding:"2px 7px",borderRadius:4,border:`0.5px solid ${D.border}`,background:"transparent",color:D.t3,cursor:"pointer"}}>Edit</button>
-                        <button onClick={()=>delItem(item.id)} style={{fontSize:10,padding:"2px 7px",borderRadius:4,border:`0.5px solid ${D.redB}`,background:"transparent",color:D.redT,cursor:"pointer"}}>Del</button>
-                      </div>
-                    )}
-                  </td>
-                </tr>;
-              })}
-            </tbody>
-            {prj.items.length>0&&(
-              <tfoot>
-                <tr style={{borderTop:`1px solid ${D.borderH}`,background:D.bg2}}>
-                  <td colSpan={3} style={{padding:"7px 10px",fontSize:11,color:D.t3,fontWeight:500}}>Totals</td>
-                  <td style={{padding:"7px 10px",fontSize:12,color:D.t2,fontWeight:600}}>{prj.items.reduce((s,i)=>s+i.qtyPlanned,0)}</td>
-                  <td style={{padding:"7px 10px",fontSize:12,color:D.amberT,fontWeight:600}}>{prj.items.reduce((s,i)=>s+i.qtyRet,0)}</td>
-                  <td style={{padding:"7px 10px",fontSize:12,color:D.tealT,fontWeight:600}}>{prj.items.reduce((s,i)=>s+i.qtyIns,0)}</td>
-                  <td style={{padding:"7px 10px",fontSize:11,color:D.t3}}></td>
-                  <td style={{padding:"7px 10px",fontSize:12,color:D.greenT,fontWeight:700}}>{(()=>{const tot=prj.items.reduce((s,i)=>s+bomUnitPrice(i)*i.qtyPlanned,0);return tot>0?`$${tot.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`:"—"})()}</td>
-                  <td/>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
-        {showItemForm&&(
-          <div style={{background:D.bg1,border:`0.5px solid ${D.blue}`,borderRadius:10,padding:16}}>
-            <div style={{fontSize:12,fontWeight:500,color:D.blueT,marginBottom:12}}>{editItem?"Edit item":"Add item"}</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Part number</div><input value={iForm.partNumber} onChange={e=>setIForm(f=>({...f,partNumber:e.target.value}))} placeholder="SFP-10G-SR" style={inpS}/></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Description</div><input value={iForm.description} onChange={e=>setIForm(f=>({...f,description:e.target.value}))} placeholder="10G SR Optic" style={inpS}/></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Category</div><select value={iForm.category} onChange={e=>setIForm(f=>({...f,category:e.target.value}))} style={selS}>{CATS.map(c=><option key={c}>{c}</option>)}</select></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Unit</div><input value={iForm.unit} onChange={e=>setIForm(f=>({...f,unit:e.target.value}))} placeholder="ea" style={inpS}/></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Qty planned</div><input type="number" min="0" value={iForm.qtyPlanned} onChange={e=>setIForm(f=>({...f,qtyPlanned:e.target.value}))} style={inpS}/></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Qty installed</div><input type="number" min="0" value={iForm.qtyIns} onChange={e=>setIForm(f=>({...f,qtyIns:e.target.value}))} style={inpS}/></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Qty returned</div><input type="number" min="0" value={iForm.qtyRet} onChange={e=>setIForm(f=>({...f,qtyRet:e.target.value}))} style={inpS}/></div>
-              <div><div style={{fontSize:10,color:D.t3,marginBottom:4}}>Unit Price ($)</div><input type="number" min="0" step="0.01" value={iForm.unitPrice} onChange={e=>setIForm(f=>({...f,unitPrice:e.target.value}))} placeholder="0.00" style={inpS}/></div>
-            </div>
-            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-              <button onClick={()=>{setShowItemForm(false);setEditItem(null);}} style={{...btnS,background:D.bg3,color:D.t2,border:`0.5px solid ${D.border}`,fontWeight:400}}>Cancel</button>
-              <button onClick={saveItem} style={{...btnS,background:D.blue,color:"#fff"}}>{editItem?"Save":"Add item"}</button>
-            </div>
-          </div>
-        )}
-      </>}
-    </div>
-  );
+  function resetItemForm(){setIForm({partNumber:"",description:"",category:"Optics",unit:"ea",qtyPlanned:"",qtyIns:"",qtyRet:"",unitPrice:""});}
 
   const WorkOrderTab=(()=>{
     const woProjects=projects.filter(p=>p.woNumber);
@@ -1455,14 +1159,58 @@ button{margin-top:14px;padding:8px 18px;border:1px solid #cbd5e1;border-radius:8
 
   return(
     <div style={{height:"100vh",display:"flex",flexDirection:"column",background:D.bg0,borderRadius:12,border:`0.5px solid ${D.border}`,overflow:"hidden",fontFamily:"system-ui,sans-serif"}}>
-      {NsToast}{IcsToast}{ExcessModal}{FormModal}{WoModal}
+      {NsToast}{IcsToast}{ExcessModal}{WoModal}
+      <NewTicketModal
+        open={showForm}
+        theme={D}
+        form={form}
+        onFormChange={setForm}
+        onClose={()=>{setShowForm(false);setForm(EMPTY_TICKET_FORM);}}
+        onSubmit={submitTicket}
+        formAutoApprove={formAutoApprove}
+        dcmUsers={USERS["DCM / Tiger Team"]}
+        PartSearch={PartSearch}
+      />
       {Topbar}
       <div style={{flex:1,padding:16,overflowY:"auto",display:"flex",flexDirection:"column"}}>
         {view!=="detail"&&view!=="analytics"&&view!=="flowchart"&&view!=="projects"&&MRow}
         {view==="board"&&BoardView}
         {view==="list"&&ListView}
         {view==="detail"&&DetailView}
-        {view==="projects"&&ProjectTab}
+        {view==="projects"&&(
+          <ProjectsPage
+            theme={D}
+            projects={projects}
+            prjSiteFilter={prjSiteFilter}
+            onClearSiteFilter={()=>setPrjSiteFilter("")}
+            onSelectSite={(site)=>{setPrjSiteFilter(site);const first=projects.find(p=>p.code===site);if(first)setActivePrj(first.id);}}
+            activePrj={activePrj}
+            onActivePrjChange={setActivePrj}
+            userRole={user.role}
+            showNewPrj={showNewPrj}
+            onShowNewPrjChange={setShowNewPrj}
+            pForm={pForm}
+            onPFormChange={setPForm}
+            locodes={LOCODES}
+            onCreateProject={createPrj}
+            prj={prj}
+            prjStats={prjStats}
+            onCreateWorkOrder={(p)=>{setWoProject(p);setWoStatus(null);setWoMemo(`Work Order — ${p.name}`);setShowWO(true);}}
+            categoryColors={CC}
+            categories={CATS}
+            showItemForm={showItemForm}
+            onShowItemFormChange={setShowItemForm}
+            editItem={editItem}
+            onEditItemChange={setEditItem}
+            iForm={iForm}
+            onIFormChange={setIForm}
+            onResetItemForm={resetItemForm}
+            bomUnitPrice={bomUnitPrice}
+            onSaveItem={saveItem}
+            onStartEditItem={startEdit}
+            onDeleteItem={delItem}
+          />
+        )}
         {view==="flowchart"&&<FlowchartView theme={D}/>}
         {view==="analytics"&&(
           <div>
