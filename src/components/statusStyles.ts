@@ -52,3 +52,8 @@ export function getStatusChipStyles(
     "Resolved / Closed": { bg: theme.greenB, tx: theme.greenT, bd: theme.green },
   };
 }
+
+
+//When items come on site, it is in "store", after its counted its is still in "store"
+//Pick anything and it can be staged, but transfer of ownership determined if it is "in process"
+//Trnasfer of ownership is when the item is handed off to the DCT

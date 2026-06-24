@@ -18,5 +18,6 @@
     "src/lib/dummyData/**/*.ts",
     "src/components/**/*.ts",
     "src/components/**/*.tsx",
+    "src/pages/**/*.tsx",
   ]
 }
